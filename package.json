@@ -1,0 +1,34 @@
+{
+  "name": "agentic-coworker-future-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "ngrok": "npx ngrok http ${PORT:-3000}",
+    "seed:summary": "tsx scripts/seed-summary.ts",
+    "demo:part-1": "bash scripts/demo-part-1.sh",
+    "demo:part-2": "bash scripts/demo-part-2.sh",
+    "demo:part-3": "bash scripts/demo-part-3.sh",
+    "demo:ops-board": "bash scripts/demo-part-2.sh",
+    "demo:all": "npm run demo:part-1 && npm run demo:part-2 && npm run demo:part-3"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "uuid": "^10.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.10.7",
+    "@types/uuid": "^10.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.8",
+    "supertest": "^7.0.0"
+  }
+}

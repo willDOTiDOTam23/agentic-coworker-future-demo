@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Part 1 — Customer Coworker</title>
+    <style>
+      body { font-family: "Avenir Next", "Trebuchet MS", sans-serif; padding: 2rem; background: linear-gradient(120deg,#ecfeff,#f8fafc); color: #0f172a; }
+      .card { background: rgba(255,255,255,.95); border: 1px solid #cbd5e1; border-radius: 16px; padding: 1rem; margin-bottom: 1rem; }
+      button { border: 0; background: #0ea5e9; color: white; padding: 0.55rem 0.9rem; border-radius: 8px; margin-right: .5rem; cursor: pointer; }
+      button.secondary { background: #94a3b8; }
+      input, select { padding: .5rem; border-radius: 8px; border: 1px solid #94a3b8; margin-right: .5rem; }
+      pre { white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>Part 1: Customer Journey</h1>
+    <p>Quick local demo of van configuration and recommendation workflow.</p>
+
+    <div class="card">
+      <h2>1) Start Session</h2>
+      <label>Customer <input id="customer" value="Ari Quill" /></label>
+      <label>Budget <input id="budget" type="number" value="88000" /></label>
+      <label>Occupancy <input id="occupancy" type="number" value="3" /></label>
+      <label>Terrain
+        <select id="terrain">
+          <option>mountain</option>
+          <option>beach</option>
+          <option>forest</option>
+          <option>winter</option>
+          <option>city</option>
+          <option>water</option>
+        </select>
+      </label>
+      <label>Region
+        <select id="region">
+          <option>NW</option>
+          <option>CA</option>
+          <option>CO</option>
+          <option>FL</option>
+        </select>
+      </label>
+      <label>Moods <input id="moods" value="adventure,winter" /></label>
+      <div><button id="start">Start</button></div>
+    </div>
+
+    <div class="card">
+      <h2>2) Configure</h2>
+      <div id="sessionMeta">No active session.</div>
+      <div id="options"></div>
+      <div id="summary"></div>
+      <div style="margin-top: 1rem">
+        <button id="submit" class="secondary">Submit</button>
+        <button id="refresh">Refresh</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Session Log</h2>
+      <pre id="log">No logs yet.</pre>
+    </div>
+
+    <script>
+      let state = null;
+      async function start() {
+        const payload = {
+          customerName: document.getElementById("customer").value,
+          budget: Number(document.getElementById("budget").value),
+          occupancy: Number(document.getElementById("occupancy").value),
+          terrain: document.getElementById("terrain").value,
+          region: document.getElementById("region").value,
+          moods: document.getElementById("moods").value.split(",").map((v) => v.trim()).filter(Boolean)
+        };
+
+        const res = await fetch('/api/sessions', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        state = data;
+        render();
+        await showLog(`Started session ${state.session.id}`);
+      }
+
+      async function toggleOption(optionId) {
+        if (!state) return;
+        const res = await fetch(`/api/sessions/${state.session.id}/options/${optionId}`, { method: 'POST' });
+        const updated = await res.json();
+        state.session = updated;
+        render();
+      }
+
+      async function submit() {
+        if (!state) return;
+        const res = await fetch(`/api/sessions/${state.session.id}/submit`, { method: 'POST' });
+        const data = await res.json();
+        state.session = data.session;
+        render();
+        showLog(data.summary ?? 'Submitted');
+      }
+
+      async function refresh() {
+        if (!state) return;
+        const res = await fetch(`/api/sessions/${state.session.id}`);
+        state.session = await res.json();
+        render();
+      }
+
+      function render() {
+        if (!state) return;
+        const rec = state.recommendation;
+        const session = state.session;
+        const optionRows = rec?.options?.map((option) => {
+          const checked = session.selectedOptionIds.includes(option.id);
+          return `<label><input type="checkbox" ${checked ? 'checked' : ''} onchange="toggleOption('${option.id}')"/> ${option.name} (+$${option.deltaPrice})</label><br/>`;
+        }).join('') || '';
+
+        document.getElementById('sessionMeta').innerText =
+          `Session ${session.id}\nVan: ${rec?.van?.name || 'unknown'}\nTotal: $${session.totalPrice} / Budget: $${session.budget}\nStatus: ${session.status}`;
+        document.getElementById('options').innerHTML = optionRows || 'No available options for this config.';
+        document.getElementById('summary').innerText = `Selected options: ${(session.selectedOptionIds || []).join(', ') || 'none'}`;
+      }
+
+      async function showLog(text) {
+        const box = document.getElementById('log');
+        const stamp = `[${new Date().toISOString()}] ${text}`;
+        box.innerText = `${stamp}\n${box.innerText}`;
+      }
+
+      document.getElementById('start').addEventListener('click', start);
+      document.getElementById('submit').addEventListener('click', submit);
+      document.getElementById('refresh').addEventListener('click', refresh);
+    </script>
+  </body>
+</html>

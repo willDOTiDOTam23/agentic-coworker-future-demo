@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Part 2 — Ops Coworker</title>
+    <style>
+      body { font-family: "Avenir Next", "Trebuchet MS", sans-serif; padding: 2rem; background: linear-gradient(120deg,#f8fafc,#f1f5f9); color:#0f172a; }
+      .card { background: white; border-radius: 16px; padding: 1rem; margin-bottom: 1rem; border: 1px solid #cbd5e1; }
+      button { border: 0; background: #2563eb; color: white; padding: 0.5rem 0.85rem; border-radius: 8px; }
+      pre { white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <h1>Part 2: Operations Coworker</h1>
+
+    <div class="card">
+      <h2>KPIs</h2>
+      <div id="kpis">Loading…</div>
+      <button onclick="loadKpis()">Refresh KPIs</button>
+      <button onclick="loadIssues()">Load Issues</button>
+    </div>
+
+    <div class="card">
+      <h2>Issue Workbench</h2>
+      <label>Session ID <input id="sessionId" placeholder="optional"/></label>
+      <button onclick="loadSessionIssues()">Load Session Issues</button>
+      <pre id="issues">No issue selected.</pre>
+    </div>
+
+    <div class="card">
+      <h2>Developer Fix Launcher</h2>
+      <label>Issue ID <input id="issueId" /></label>
+      <button onclick="applyFix()">Apply Fix</button>
+      <pre id="fixResult"></pre>
+    </div>
+
+    <script>
+      async function loadKpis() {
+        const data = await (await fetch('/api/ops/kpis')).json();
+        document.getElementById('kpis').innerText = JSON.stringify(data, null, 2);
+      }
+
+      async function loadIssues() {
+        const data = await (await fetch('/api/ops/issues')).json();
+        document.getElementById('issues').innerText = JSON.stringify(data, null, 2);
+      }
+
+      async function loadSessionIssues() {
+        const id = document.getElementById('sessionId').value.trim();
+        if (!id) return;
+        const data = await (await fetch(`/api/ops/sessions/${id}/issues`)).json();
+        document.getElementById('issues').innerText = JSON.stringify(data, null, 2);
+      }
+
+      async function applyFix() {
+        const id = document.getElementById('issueId').value.trim();
+        const body = { issueId: id };
+        const data = await (await fetch('/api/mcp/tools/dev.fixIssue/call', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        })).json();
+        document.getElementById('fixResult').innerText = JSON.stringify(data, null, 2);
+        loadKpis();
+      }
+
+      loadKpis();
+      loadIssues();
+    </script>
+  </body>
+</html>
