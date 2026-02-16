@@ -7,6 +7,7 @@ import {
   OpsBoardItem,
   OpsBoardPayload,
   PriorityLane,
+  GuidedInputCaptureState,
   RecoResult,
   Region,
   Session,
@@ -39,6 +40,13 @@ function nowIso() {
 }
 
 const SAFE_DEFAULT_MOODS = ["family", "safety"];
+const DEFAULT_CAPTURED_INPUTS: GuidedInputCaptureState = {
+  customerName: true,
+  tripStyle: true,
+  budgetBand: true,
+  terrain: true,
+  region: true
+};
 
 function normalizeStringList(values: string[] | undefined) {
   return Array.from(new Set((values ?? []).map((value) => value.trim().toLowerCase()).filter(Boolean)));
@@ -64,6 +72,23 @@ function computeBudget(payload?: number, band?: BudgetBand) {
   if (payload && payload > 0) return payload;
   if (band && BUDGET_BANDS[band]) return BUDGET_BANDS[band];
   return BUDGET_BANDS.balanced;
+}
+
+function resolveCapturedInputs(payload: Pick<GuidedSessionInput, "customerName" | "tripStyle" | "budget" | "budgetBand" | "terrain" | "region">): GuidedInputCaptureState {
+  return {
+    customerName: Boolean(payload.customerName?.trim()),
+    tripStyle: Boolean(payload.tripStyle?.trim()),
+    budgetBand: Boolean(payload.budget || payload.budgetBand),
+    terrain: Boolean(payload.terrain),
+    region: Boolean(payload.region)
+  };
+}
+
+function ensureCapturedInputs(session: Session) {
+  if (!session.capturedInputs) {
+    session.capturedInputs = { ...DEFAULT_CAPTURED_INPUTS };
+  }
+  return session.capturedInputs;
 }
 
 function scoreVan(van: (typeof vans)[number], budget: number, terrain: Terrain, region: Region, moods: string[]) {
@@ -224,19 +249,23 @@ function computeJourneyCards(step: 1 | 2 | 3 | 4 | 5, session: Session, recommen
 }
 
 function buildJourneyStateForSession(session: Session): GuidedJourneyState {
+  const capturedInputs = session.capturedInputs ?? DEFAULT_CAPTURED_INPUTS;
   const rec = summarizeForStepCards(session);
   const currentStepHint = session.journey?.step ?? 1;
-  const hasStep1 = session.customerName.trim().length > 0 && session.tripStyle?.trim().length > 0 &&
-    session.terrain && session.region && session.budget > 0;
+  const hasStep1 = capturedInputs.customerName &&
+    capturedInputs.tripStyle &&
+    capturedInputs.budgetBand &&
+    capturedInputs.terrain &&
+    capturedInputs.region;
   const hasStep2 = hasStep1 && session.moods.length > 0;
   const missingStep1Fields = hasStep1
     ? []
     : [
-        !session.customerName.trim() ? "customerName" : null,
-        !session.tripStyle?.trim() ? "tripStyle" : null,
-        !session.budget ? "budgetBand" : null,
-        !session.terrain ? "terrain" : null,
-        !session.region ? "region" : null
+        !capturedInputs.customerName ? "customerName" : null,
+        !capturedInputs.tripStyle ? "tripStyle" : null,
+        !capturedInputs.budgetBand ? "budgetBand" : null,
+        !capturedInputs.terrain ? "terrain" : null,
+        !capturedInputs.region ? "region" : null
       ].filter((field): field is string => Boolean(field));
 
   if (!hasStep1) {
@@ -319,6 +348,13 @@ function applyQuickAction(session: Session, action: string) {
     session.selectedOptionIds = [];
     session.journey.step = 1;
     session.tripStyle = "";
+    session.capturedInputs = {
+      customerName: false,
+      tripStyle: false,
+      budgetBand: false,
+      terrain: false,
+      region: false
+    };
     const sessionIssues = getIssuesBySession(session.id);
     sessionIssues.forEach((issue) => {
       issue.fixed = true;
@@ -427,6 +463,7 @@ export function createSession(payload: {
   region: Region;
   moods: string[];
   tripStyle?: string;
+  capturedInputs?: GuidedInputCaptureState;
 }) {
   const normalizedMoods = normalizeStringList(payload.moods);
   const recommendedVan = recalculateChosenVan({
@@ -452,6 +489,7 @@ export function createSession(payload: {
     selectedOptionIds: [],
     totalPrice: recommendation.van.basePrice,
     status: "draft",
+    capturedInputs: payload.capturedInputs ?? DEFAULT_CAPTURED_INPUTS,
     journey: buildJourneyStateForSession({
       id,
       customerName: payload.customerName || "Guest",
@@ -465,6 +503,7 @@ export function createSession(payload: {
       selectedOptionIds: [],
       totalPrice: recommendation.van.basePrice,
       status: "draft",
+      capturedInputs: payload.capturedInputs ?? DEFAULT_CAPTURED_INPUTS,
       journey: {
         step: 1,
         nextQuestion: "",
@@ -515,6 +554,7 @@ export interface GuidedSessionInput {
 
 export function startGuidedSession(payload: GuidedSessionInput) {
   const resolvedBudget = computeBudget(payload.budget, payload.budgetBand);
+  const capturedInputs = resolveCapturedInputs(payload);
   const sessionPayload = {
     customerName: payload.customerName?.trim() ?? "",
     budget: resolvedBudget,
@@ -522,7 +562,8 @@ export function startGuidedSession(payload: GuidedSessionInput) {
     terrain: payload.terrain ?? "city",
     region: payload.region ?? "CO",
     moods: normalizeStringList(payload.moods),
-    tripStyle: payload.tripStyle?.trim()
+    tripStyle: payload.tripStyle?.trim(),
+    capturedInputs
   };
 
   const created = createSession(sessionPayload);
@@ -575,15 +616,29 @@ export function refreshGuidedSession(sessionId: string) {
 export function advanceGuidedSession(payload: GuidedSessionUpdate) {
   const session = getSession(payload.sessionId);
   if (!session) return null;
+  const capturedInputs = ensureCapturedInputs(session);
   let submitResult: ReturnType<typeof submitSession> | null = null;
 
-  if (payload.customerName) session.customerName = payload.customerName;
-  if (payload.tripStyle) session.tripStyle = payload.tripStyle;
-  if (payload.terrain) session.terrain = payload.terrain;
-  if (payload.region) session.region = payload.region;
+  if (payload.customerName) {
+    session.customerName = payload.customerName;
+    capturedInputs.customerName = payload.customerName.trim().length > 0;
+  }
+  if (payload.tripStyle) {
+    session.tripStyle = payload.tripStyle;
+    capturedInputs.tripStyle = payload.tripStyle.trim().length > 0;
+  }
+  if (payload.terrain) {
+    session.terrain = payload.terrain;
+    capturedInputs.terrain = true;
+  }
+  if (payload.region) {
+    session.region = payload.region;
+    capturedInputs.region = true;
+  }
   if (payload.occupancy) session.occupancy = payload.occupancy;
   if (payload.budgetBand || payload.budget) {
     session.budget = computeBudget(payload.budget, payload.budgetBand);
+    capturedInputs.budgetBand = true;
   }
   if (payload.moods) {
     session.moods = normalizeStringList(payload.moods);
@@ -605,11 +660,15 @@ export function advanceGuidedSession(payload: GuidedSessionUpdate) {
     applyQuickAction(session, payload.action);
   }
 
-  if (payload.action === "submit") {
+  const recommendation = recalcSessionProjection(session);
+  const submissionError = payload.action === "submit" && session.journey.step < 5
+    ? "Please complete the guided flow before submitting."
+    : undefined;
+
+  if (payload.action === "submit" && !submissionError) {
     submitResult = submitSession(payload.sessionId);
   }
 
-  const recommendation = recalcSessionProjection(session);
   session.logs.push({
     ts: nowIso(),
     event: "guided_update",
@@ -627,6 +686,7 @@ export function advanceGuidedSession(payload: GuidedSessionUpdate) {
     nextQuestion: session.journey.nextQuestion,
     requiredInputs: session.journey.requiredInputs,
     stepCards: session.journey.stepCards,
+    submissionError,
     submission: submitResult
   };
 }

@@ -48,7 +48,7 @@ The local web pages are retained for smoke checks only; the intended demo intera
 
 1. `npm run demo:part-1` run a guided API smoke flow for Part 1.
 1. `npm run demo:part-2` show ops board output.
-1. `npm run demo:part-3 <ISSUE_ID>` apply a fix via `dev.fixIssue`.
+1. `npm run demo:part-3` apply a fix via `dev.fixIssue` (optionally pass `ISSUE_ID`).
 1. `npm run seed:summary` show current catalog/session baseline.
 1. `npm run test` run the test suite.
 

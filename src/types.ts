@@ -35,6 +35,14 @@ export interface SessionLog {
   severity: "info" | "warn" | "error";
 }
 
+export interface GuidedInputCaptureState {
+  customerName: boolean;
+  tripStyle: boolean;
+  budgetBand: boolean;
+  terrain: boolean;
+  region: boolean;
+}
+
 export interface JourneyCard {
   id: string;
   title: string;
@@ -72,6 +80,7 @@ export interface Session {
   totalPrice: number;
   status: "draft" | "needs_attention" | "submitted" | "blocked" | "resolved";
   journey: GuidedJourneyState;
+  capturedInputs: GuidedInputCaptureState;
   logs: SessionLog[];
   createdAt: string;
   updatedAt: string;
