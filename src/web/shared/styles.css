@@ -527,6 +527,11 @@ input {
   overflow: hidden;
 }
 
+.build-context-card-scrollable {
+  overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
+}
+
 .build-context-stack {
   display: grid;
   gap: 14px;
@@ -836,6 +841,10 @@ input {
   gap: 10px;
 }
 
+.gear-panel .attachment-row {
+  grid-template-columns: 1fr;
+}
+
 .attachment-card {
   display: flex;
   align-items: center;
@@ -869,6 +878,7 @@ input {
 .gear-module-stack {
   display: grid;
   gap: 10px;
+  padding-bottom: 2px;
 }
 
 .gear-module-card {
@@ -876,6 +886,11 @@ input {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+}
+
+.gear-panel .gear-module-card {
+  align-items: flex-start;
+  flex-direction: column;
 }
 
 .gear-module-status {

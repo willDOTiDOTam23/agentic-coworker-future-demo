@@ -133,4 +133,33 @@ describe("deriveVisualizationSpec", () => {
     expect(spec.exteriorScene.renderColor).toBe("#6c876f");
     expect(spec.exteriorScene.wheelVariant).toBe("compact");
   });
+
+  it("clamps long layout labels into schema-safe visualization values", () => {
+    const spec = deriveVisualizationSpec(
+      createSession({
+        currentStep: 4,
+        state: {
+          vision: {},
+          exterior: {
+            exteriorColor: "Marine blue"
+          },
+          interior: {},
+          layout: {
+            driveSide: "left-hand drive",
+            frontSeatConfig: "Swivel captain seats with extended navigation console and storage cubby",
+            galleyType: "Full chef galley with induction hob, walnut prep counter, and appliance tower",
+            storageType: "Tall gear wall with overhead cabinets, hidden cubbies, and bike tunnel storage",
+            dinetteType: "Convertible wraparound lounge with removable table and integrated charging shelf",
+            bedType: "Powered slide-out queen bed with reading sconces and under-bed utility drawers"
+          },
+          gear: {}
+        }
+      })
+    );
+
+    expect(() => VisualizationSpecSchema.parse(spec)).not.toThrow();
+    expect(spec.layoutFloorplan.zones.every((zone) => zone.label.length <= 40)).toBe(true);
+    expect(spec.layoutFloorplan.legend.every((item) => item.label.length <= 40)).toBe(true);
+    expect(spec.layoutFloorplan.zones.every((zone) => zone.shortLabel.length <= 3)).toBe(true);
+  });
 });

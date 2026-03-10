@@ -3,7 +3,7 @@ import type { AppConfig } from "../lib/config.js";
 import type { VisualizationSpec } from "../lib/domain.js";
 import type { SqliteRepository } from "../lib/repository.js";
 import type { SseBroker } from "../lib/sse.js";
-import { VisualizationSpecSchema, withVisualizationMetadata } from "../lib/visualization.js";
+import { sanitizeVisualizationSpecInput, VisualizationSpecSchema, withVisualizationMetadata } from "../lib/visualization.js";
 import { createVisualizationAgent } from "./configuration-visualizer/index.js";
 
 interface QueueState {
@@ -92,7 +92,7 @@ class OpenAiVisualizationOrchestrator implements VisualizationOrchestrator {
         }
       );
 
-      const parsed = VisualizationSpecSchema.parse(result.finalOutput);
+      const parsed = VisualizationSpecSchema.parse(sanitizeVisualizationSpecInput(result.finalOutput));
       const refined = this.stabilizeSpec(detail.visualSpec, parsed);
       this.repo.saveVisualSpec(sessionId, refined);
       this.sse.broadcast({

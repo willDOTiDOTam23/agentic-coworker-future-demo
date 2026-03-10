@@ -320,13 +320,15 @@ function renderGearPanel(spec: VisualizationSpec) {
   const featuredAttachments = (spec.gearScene.attachmentStates.filter((attachment) => attachment.active).length
     ? spec.gearScene.attachmentStates.filter((attachment) => attachment.active)
     : spec.gearScene.attachmentStates
-  ).slice(0, 3);
-  const featuredModules = spec.gearScene.modules
-    .filter((module) => module.status !== "inactive")
-    .slice(0, 3);
+  );
+  const featuredModules = (
+    spec.gearScene.modules.filter((module) => module.status !== "inactive").length
+      ? spec.gearScene.modules.filter((module) => module.status !== "inactive")
+      : spec.gearScene.modules
+  );
 
   return (
-    <div className="build-context-stack">
+    <div className="build-context-stack gear-panel">
       <div className="attachment-row">
         {featuredAttachments.map((attachment) => (
           <div key={attachment.id} className={`attachment-card ${attachment.active ? "active" : "inactive"}`}>
@@ -517,7 +519,10 @@ export function VanAssembly({ session, visualSpec, activeStep }: VanAssemblyProp
           </div>
         </div>
 
-        <div className="build-context-card" data-testid="build-context-panel">
+        <div
+          className={`build-context-card${displayStep === "gear" ? " build-context-card-scrollable" : ""}`}
+          data-testid="build-context-panel"
+        >
           <div className="build-context-kicker">{currentStepTitle(displayStep)}</div>
           {renderContextPanel(displayStep, spec)}
         </div>

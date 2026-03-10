@@ -320,6 +320,180 @@ function clampText(value: string, limit: number) {
   return `${value.slice(0, Math.max(0, limit - 1)).trimEnd()}…`;
 }
 
+function clampListItems(items: string[], itemLimit: number, maxItems?: number) {
+  const normalized = items.map((item) => clampText(item.trim(), itemLimit)).filter(Boolean);
+  return typeof maxItems === "number" ? normalized.slice(0, maxItems) : normalized;
+}
+
+function asObject(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function sanitizeStepRail(value: unknown) {
+  if (!Array.isArray(value)) return value;
+  return value.slice(0, STEP_DEFINITIONS.length).map((item) => {
+    const next = asObject(item);
+    if (!next) return item;
+    return {
+      ...next,
+      label: typeof next.label === "string" ? clampText(next.label, 80) : next.label
+    };
+  });
+}
+
+function sanitizeLayoutEntries(value: unknown) {
+  if (!Array.isArray(value)) return value;
+  return value.slice(0, 8).map((item) => {
+    const next = asObject(item);
+    if (!next) return item;
+    return {
+      ...next,
+      label: typeof next.label === "string" ? clampText(next.label, 40) : next.label,
+      shortLabel: typeof next.shortLabel === "string" ? clampText(next.shortLabel, 3) : next.shortLabel
+    };
+  });
+}
+
+export function sanitizeVisualizationSpecInput(input: unknown) {
+  const root = asObject(input);
+  if (!root) {
+    return input;
+  }
+
+  const theme = asObject(root.theme);
+  const visionHighlights = asObject(root.visionHighlights);
+  const exteriorScene = asObject(root.exteriorScene);
+  const interiorSwatches = asObject(root.interiorSwatches);
+  const layoutFloorplan = asObject(root.layoutFloorplan);
+  const gearScene = asObject(root.gearScene);
+
+  return {
+    ...root,
+    stepRail: sanitizeStepRail(root.stepRail),
+    theme: theme
+      ? {
+          ...theme,
+          paletteName: typeof theme.paletteName === "string" ? clampText(theme.paletteName, 80) : theme.paletteName,
+          requestedExteriorColor:
+            typeof theme.requestedExteriorColor === "string" ? clampText(theme.requestedExteriorColor, 80) : theme.requestedExteriorColor
+        }
+      : root.theme,
+    visionHighlights: visionHighlights
+      ? {
+          ...visionHighlights,
+          title: typeof visionHighlights.title === "string" ? clampText(visionHighlights.title, 80) : visionHighlights.title,
+          summary:
+            typeof visionHighlights.summary === "string" ? clampText(visionHighlights.summary, 180) : visionHighlights.summary,
+          chips: Array.isArray(visionHighlights.chips)
+            ? clampListItems(
+                visionHighlights.chips.filter((item): item is string => typeof item === "string"),
+                40,
+                6
+              )
+            : visionHighlights.chips
+        }
+      : root.visionHighlights,
+    exteriorScene: exteriorScene
+      ? {
+          ...exteriorScene,
+          requestedColor:
+            typeof exteriorScene.requestedColor === "string" ? clampText(exteriorScene.requestedColor, 80) : exteriorScene.requestedColor,
+          finish: typeof exteriorScene.finish === "string" ? clampText(exteriorScene.finish, 40) : exteriorScene.finish,
+          wheelStyle:
+            typeof exteriorScene.wheelStyle === "string" ? clampText(exteriorScene.wheelStyle, 40) : exteriorScene.wheelStyle,
+          rackStyle:
+            typeof exteriorScene.rackStyle === "string" ? clampText(exteriorScene.rackStyle, 40) : exteriorScene.rackStyle,
+          auxLights:
+            typeof exteriorScene.auxLights === "string" ? clampText(exteriorScene.auxLights, 40) : exteriorScene.auxLights,
+          powertrain:
+            typeof exteriorScene.powertrain === "string" ? clampText(exteriorScene.powertrain, 40) : exteriorScene.powertrain,
+          frontSeatConfig:
+            typeof exteriorScene.frontSeatConfig === "string" ? clampText(exteriorScene.frontSeatConfig, 60) : exteriorScene.frontSeatConfig,
+          roofGear:
+            typeof exteriorScene.roofGear === "string" ? clampText(exteriorScene.roofGear, 60) : exteriorScene.roofGear,
+          rearCarrier:
+            typeof exteriorScene.rearCarrier === "string" ? clampText(exteriorScene.rearCarrier, 60) : exteriorScene.rearCarrier,
+          campLighting:
+            typeof exteriorScene.campLighting === "string" ? clampText(exteriorScene.campLighting, 60) : exteriorScene.campLighting,
+          badges: Array.isArray(exteriorScene.badges)
+            ? clampListItems(exteriorScene.badges.filter((item): item is string => typeof item === "string"), 32, 4)
+            : exteriorScene.badges,
+          overlays: Array.isArray(exteriorScene.overlays)
+            ? clampListItems(exteriorScene.overlays.filter((item): item is string => typeof item === "string"), 40, 8)
+            : exteriorScene.overlays
+        }
+      : root.exteriorScene,
+    interiorSwatches: interiorSwatches
+      ? {
+          ...interiorSwatches,
+          fixtureColor:
+            typeof interiorSwatches.fixtureColor === "string" ? clampText(interiorSwatches.fixtureColor, 40) : interiorSwatches.fixtureColor,
+          primaryTexture:
+            typeof interiorSwatches.primaryTexture === "string" ? clampText(interiorSwatches.primaryTexture, 40) : interiorSwatches.primaryTexture,
+          secondaryTexture:
+            typeof interiorSwatches.secondaryTexture === "string" ? clampText(interiorSwatches.secondaryTexture, 40) : interiorSwatches.secondaryTexture,
+          stitchingColor:
+            typeof interiorSwatches.stitchingColor === "string" ? clampText(interiorSwatches.stitchingColor, 40) : interiorSwatches.stitchingColor,
+          seatFinish:
+            typeof interiorSwatches.seatFinish === "string" ? clampText(interiorSwatches.seatFinish, 40) : interiorSwatches.seatFinish,
+          notes: Array.isArray(interiorSwatches.notes)
+            ? clampListItems(interiorSwatches.notes.filter((item): item is string => typeof item === "string"), 40, 6)
+            : interiorSwatches.notes
+        }
+      : root.interiorSwatches,
+    layoutFloorplan: layoutFloorplan
+      ? {
+          ...layoutFloorplan,
+          frontSeatConfig:
+            typeof layoutFloorplan.frontSeatConfig === "string" ? clampText(layoutFloorplan.frontSeatConfig, 60) : layoutFloorplan.frontSeatConfig,
+          notes: Array.isArray(layoutFloorplan.notes)
+            ? clampListItems(layoutFloorplan.notes.filter((item): item is string => typeof item === "string"), 50, 6)
+            : layoutFloorplan.notes,
+          zones: sanitizeLayoutEntries(layoutFloorplan.zones),
+          legend: sanitizeLayoutEntries(layoutFloorplan.legend)
+        }
+      : root.layoutFloorplan,
+    gearScene: gearScene
+      ? {
+          ...gearScene,
+          roofGear: typeof gearScene.roofGear === "string" ? clampText(gearScene.roofGear, 60) : gearScene.roofGear,
+          rearCarrier:
+            typeof gearScene.rearCarrier === "string" ? clampText(gearScene.rearCarrier, 60) : gearScene.rearCarrier,
+          powerModule:
+            typeof gearScene.powerModule === "string" ? clampText(gearScene.powerModule, 60) : gearScene.powerModule,
+          campLighting:
+            typeof gearScene.campLighting === "string" ? clampText(gearScene.campLighting, 60) : gearScene.campLighting,
+          attachmentStates: Array.isArray(gearScene.attachmentStates)
+            ? gearScene.attachmentStates.slice(0, 8).map((item) => {
+                const next = asObject(item);
+                if (!next) return item;
+                return {
+                  ...next,
+                  label: typeof next.label === "string" ? clampText(next.label, 60) : next.label
+                };
+              })
+            : gearScene.attachmentStates,
+          modules: Array.isArray(gearScene.modules)
+            ? gearScene.modules.slice(0, 8).map((item) => {
+                const next = asObject(item);
+                if (!next) return item;
+                return {
+                  ...next,
+                  label: typeof next.label === "string" ? clampText(next.label, 60) : next.label,
+                  detail: typeof next.detail === "string" ? clampText(next.detail, 80) : next.detail
+                };
+              })
+            : gearScene.modules
+        }
+      : root.gearScene
+  };
+}
+
+export const SanitizedVisualizationSpecSchema = z.preprocess(
+  sanitizeVisualizationSpecInput,
+  VisualizationSpecSchema
+);
+
 function includesLike(value: string | null | undefined, ...needles: string[]) {
   const normalized = (value ?? "").toLowerCase();
   return needles.some((needle) => normalized.includes(needle));
@@ -447,7 +621,7 @@ function buildLayoutLegend(
 ): VisualizationSpec["layoutFloorplan"]["legend"] {
   return zones.map((zone) => ({
     kind: zone.kind,
-    label: zone.label,
+    label: clampText(zone.label, 40),
     shortLabel: zone.shortLabel,
     emphasis: zone.emphasis
   }));
@@ -471,7 +645,7 @@ function deriveLayoutZones(
       y: 0,
       w: 2,
       h: 2,
-      label: driveSide === "left" ? "LHD cockpit" : "RHD cockpit",
+      label: clampText(driveSide === "left" ? "LHD cockpit" : "RHD cockpit", 40),
       shortLabel: getZoneShortLabel("driver"),
       emphasis: "primary"
     },
@@ -481,7 +655,7 @@ function deriveLayoutZones(
       y: 0,
       w: 2,
       h: 2,
-      label: frontSeatConfig,
+      label: clampText(frontSeatConfig, 40),
       shortLabel: getZoneShortLabel("passenger"),
       emphasis: "secondary"
     },
@@ -491,7 +665,7 @@ function deriveLayoutZones(
       y: 2,
       w: 4,
       h: 2,
-      label: galleyType,
+      label: clampText(galleyType, 40),
       shortLabel: getZoneShortLabel("galley"),
       emphasis: "primary"
     },
@@ -501,7 +675,7 @@ function deriveLayoutZones(
       y: 2,
       w: 4,
       h: 2,
-      label: storageType,
+      label: clampText(storageType, 40),
       shortLabel: getZoneShortLabel("storage"),
       emphasis: "secondary"
     },
@@ -511,7 +685,7 @@ function deriveLayoutZones(
       y: 2,
       w: 4,
       h: 2,
-      label: dinetteType,
+      label: clampText(dinetteType, 40),
       shortLabel: getZoneShortLabel("dinette"),
       emphasis: "support"
     },
@@ -521,7 +695,7 @@ function deriveLayoutZones(
       y: 4,
       w: 8,
       h: 2,
-      label: bedType,
+      label: clampText(bedType, 40),
       shortLabel: getZoneShortLabel("bed"),
       emphasis: "primary"
     }
@@ -675,7 +849,7 @@ export function deriveVisualizationSpec(
     }
   ];
 
-  return VisualizationSpecSchema.parse({
+  return VisualizationSpecSchema.parse(sanitizeVisualizationSpecInput({
     generatedBy: "deterministic",
     updatedAt: now(),
     currentStep,
@@ -776,16 +950,16 @@ export function deriveVisualizationSpec(
         }
       ]
     }
-  });
+  }));
 }
 
 export function withVisualizationMetadata(
   spec: VisualizationSpec,
   input: Partial<Pick<VisualizationSpec, "generatedBy">>
 ): VisualizationSpec {
-  return VisualizationSpecSchema.parse({
+  return VisualizationSpecSchema.parse(sanitizeVisualizationSpecInput({
     ...spec,
     generatedBy: input.generatedBy ?? spec.generatedBy,
     updatedAt: now()
-  });
+  }));
 }

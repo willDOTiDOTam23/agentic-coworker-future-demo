@@ -1,7 +1,7 @@
 import { Agent } from "@openai/agents";
 import type { AppConfig } from "../../lib/config.js";
 import type { VisualizationSpec } from "../../lib/domain.js";
-import { VisualizationSpecSchema } from "../../lib/visualization.js";
+import { SanitizedVisualizationSpecSchema } from "../../lib/visualization.js";
 
 export const CONFIGURATION_VISUALIZER_PROMPT = `
 You are Configuration Visualizer for Northstar Vans.
@@ -39,6 +39,6 @@ export function createVisualizationAgent(config: AppConfig) {
       store: true,
       parallelToolCalls: false
     },
-    outputType: VisualizationSpecSchema as any
+    outputType: SanitizedVisualizationSpecSchema as any
   });
 }
