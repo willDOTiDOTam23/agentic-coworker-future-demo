@@ -242,8 +242,6 @@ function renderInteriorPanel(spec: VisualizationSpec) {
   const swatches = [
     { label: "Fixtures", value: spec.interiorSwatches.fixtureColor, fallback: "#c8a57f" },
     { label: "Primary", value: spec.interiorSwatches.primaryTexture, fallback: "#ece5d9" },
-    { label: "Secondary", value: spec.interiorSwatches.secondaryTexture, fallback: "#b7b7b2" },
-    { label: "Stitching", value: spec.interiorSwatches.stitchingColor, fallback: "#d89c5d" },
     { label: "Seat", value: spec.interiorSwatches.seatFinish, fallback: "#b28a64" }
   ];
 
@@ -274,6 +272,10 @@ function zoneClass(emphasis: VisualizationSpec["layoutFloorplan"]["legend"][numb
 }
 
 function renderLayoutPanel(spec: VisualizationSpec) {
+  const highlightedLegend = spec.layoutFloorplan.legend.filter((item) =>
+    ["driver", "galley", "bed"].includes(item.kind)
+  );
+
   return (
     <div className="build-context-stack">
       <div className="floorplan-card compact">
@@ -300,7 +302,7 @@ function renderLayoutPanel(spec: VisualizationSpec) {
       </div>
 
       <div className="legend-grid" data-testid="layout-legend">
-        {spec.layoutFloorplan.legend.map((item) => (
+        {highlightedLegend.map((item) => (
           <div key={`${item.kind}-${item.label}`} className="legend-card">
             <span className={`legend-token ${item.emphasis}`}>{item.shortLabel}</span>
             <div>
@@ -315,10 +317,18 @@ function renderLayoutPanel(spec: VisualizationSpec) {
 }
 
 function renderGearPanel(spec: VisualizationSpec) {
+  const featuredAttachments = (spec.gearScene.attachmentStates.filter((attachment) => attachment.active).length
+    ? spec.gearScene.attachmentStates.filter((attachment) => attachment.active)
+    : spec.gearScene.attachmentStates
+  ).slice(0, 3);
+  const featuredModules = spec.gearScene.modules
+    .filter((module) => module.status !== "inactive")
+    .slice(0, 3);
+
   return (
     <div className="build-context-stack">
       <div className="attachment-row">
-        {spec.gearScene.attachmentStates.map((attachment) => (
+        {featuredAttachments.map((attachment) => (
           <div key={attachment.id} className={`attachment-card ${attachment.active ? "active" : "inactive"}`}>
             <span className="attachment-dot" aria-hidden="true" />
             <strong>{attachment.label}</strong>
@@ -327,7 +337,7 @@ function renderGearPanel(spec: VisualizationSpec) {
       </div>
 
       <div className="gear-module-stack">
-        {spec.gearScene.modules.map((module) => (
+        {featuredModules.map((module) => (
           <div key={module.id} className="gear-module-card">
             <div>
               <span className="gear-module-label">{module.label}</span>

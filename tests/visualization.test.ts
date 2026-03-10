@@ -107,6 +107,7 @@ describe("deriveVisualizationSpec", () => {
     expect(laterSpec.theme.backgroundA).toBe(lockedSpec.theme.backgroundA);
     expect(laterSpec.theme.backgroundB).toBe(lockedSpec.theme.backgroundB);
     expect(laterSpec.theme.resolvedExteriorColor).toBe(lockedSpec.theme.resolvedExteriorColor);
+    expect(laterSpec.exteriorScene.renderColor).toBe(lockedSpec.exteriorScene.renderColor);
   });
 
   it("maps common spoken exterior colors into a renderable palette", () => {

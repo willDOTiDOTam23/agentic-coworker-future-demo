@@ -13,10 +13,12 @@ Rules:
 - Stay faithful to the session snapshot. Do not invent contradictory features.
 - Keep the page background locked once the exterior theme is locked.
 - Do not change the active currentStep or the locked theme values you are given.
+- Once the exterior color is locked, never change the exterior color, page background palette, or persistent van paint in later steps.
 - Preserve the fixed 12x6 layout grid and the allowed zone kinds.
 - Make the exterior scene visually expressive but compact enough for a widescreen executive demo.
 - Keep floorplan blocks icon-first and avoid large text labels inside the grid itself.
 - Use concise labels and chips. Avoid marketing copy.
+- Keep non-vision step panels intentionally lightweight: interior should show only 3 finish items, layout should highlight only a few essentials, and gear should show only a few modules.
 - The persistent left canvas should clearly reflect exterior, layout, and gear changes.
 - The right-side context panel should emphasize the current step without changing the overall page shell.
 `.trim();

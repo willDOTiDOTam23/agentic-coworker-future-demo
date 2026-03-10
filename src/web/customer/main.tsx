@@ -42,6 +42,29 @@ function createWaveSampler(analyser: AnalyserNode, setValues: (values: number[])
   return () => cancelAnimationFrame(frame);
 }
 
+function stabilizeLockedVisualSpec(
+  previous: VisualizationSpec | null,
+  next: VisualizationSpec | null | undefined
+) {
+  if (!next) {
+    return previous;
+  }
+
+  if (!previous?.theme.backgroundLocked) {
+    return next;
+  }
+
+  if (!["interior", "layout", "gear"].includes(next.currentStep)) {
+    return next;
+  }
+
+  return {
+    ...next,
+    theme: previous.theme,
+    exteriorScene: previous.exteriorScene
+  } satisfies VisualizationSpec;
+}
+
 function App() {
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
   const [statusCopy, setStatusCopy] = useState("Ready when you are.");
@@ -68,9 +91,7 @@ function App() {
   });
 
   const applyVisualSpec = useEffectEvent((nextVisualSpec: VisualizationSpec | null | undefined) => {
-    if (nextVisualSpec) {
-      setVisualSpec(nextVisualSpec);
-    }
+    setVisualSpec((current) => stabilizeLockedVisualSpec(current, nextVisualSpec));
   });
 
   const subscribeToSessionStream = useEffectEvent((sessionId: string) => {
