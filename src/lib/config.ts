@@ -2,7 +2,8 @@ import dotenv from "dotenv";
 import { z } from "zod";
 import { ReasoningEffortSchema } from "./schemas.js";
 
-dotenv.config();
+// Prefer the repo-local demo key over any stale shell export.
+dotenv.config({ override: true });
 
 const EnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).optional(),

@@ -1,8 +1,10 @@
 import { Agent, handoff, run, tool } from "@openai/agents";
+import { promptWithHandoffInstructions } from "@openai/agents-core/extensions";
 import { z } from "zod";
 import type { AppConfig } from "../lib/config.js";
 import { renderDesignBriefHtml, renderSupplyOrderHtml } from "../lib/artifacts.js";
 import type { ArtifactRecord, ConfigurationDetail } from "../lib/domain.js";
+import type { PublishStatusEventInput } from "../lib/schemas.js";
 import { DesignBriefSchema, MonitorOutputSchema, PublishStatusEventSchema, SupplyOrderSchema } from "../lib/schemas.js";
 import type { SseBroker, SseEventPayload } from "../lib/sse.js";
 import type { SqliteRepository } from "../lib/repository.js";
@@ -21,6 +23,8 @@ interface QueueState {
 interface RuntimeFlags {
   monitorConfidence?: number;
   designBriefPersisted?: boolean;
+  supplyOrderPersisted?: boolean;
+  lastMonitorStatus?: PublishStatusEventInput;
 }
 
 export interface OpsRunContextValue {
@@ -69,11 +73,26 @@ function emit(
 
 function buildTools() {
   const EmptyParameters = z.object({});
+  const isMonitorBeforeStatus = ({ runContext, agent }: { runContext: { context: OpsRunContextValue }; agent: { name: string } }) =>
+    agent.name === "Session Monitor" && !runContext.context.runtime.lastMonitorStatus;
+  const isDesignPlannerBeforePersist = ({ runContext, agent }: { runContext: { context: OpsRunContextValue }; agent: { name: string } }) =>
+    agent.name === "Design Planner" && !runContext.context.runtime.designBriefPersisted;
+  const isSupplyOrchestratorBeforePersist = ({
+    runContext,
+    agent
+  }: {
+    runContext: { context: OpsRunContextValue };
+    agent: { name: string };
+  }) => agent.name === "Supply Orchestrator" && !runContext.context.runtime.supplyOrderPersisted;
 
   const loadSessionContext = tool<typeof EmptyParameters, OpsRunContextValue>({
     name: "load_session_context",
     description: "Load the current configuration session snapshot, latest turns, and theme state.",
     parameters: EmptyParameters,
+    isEnabled: (args) =>
+      isMonitorBeforeStatus(args as any) ||
+      isDesignPlannerBeforePersist(args as any) ||
+      isSupplyOrchestratorBeforePersist(args as any),
     execute: async (_input, runContext) => {
       return runContext?.context.snapshot ?? null;
     }
@@ -83,6 +102,10 @@ function buildTools() {
     name: "list_artifacts",
     description: "List the artifacts already generated for the active session.",
     parameters: EmptyParameters,
+    isEnabled: (args) =>
+      isMonitorBeforeStatus(args as any) ||
+      isDesignPlannerBeforePersist(args as any) ||
+      isSupplyOrchestratorBeforePersist(args as any),
     execute: async (_input, runContext) => {
       const context = runContext?.context;
       if (!context) return [];
@@ -100,6 +123,8 @@ function buildTools() {
     description:
       "Persist and broadcast a concise operational status update with optional confidence and next action.",
     parameters: PublishStatusEventSchema,
+    isEnabled: ({ runContext, agent }) =>
+      agent.name === "Session Monitor" && !runContext.context.runtime.lastMonitorStatus,
     execute: async (input, runContext) => {
       const context = runContext?.context;
       if (!context) return { ok: false };
@@ -109,10 +134,14 @@ function buildTools() {
         context.repo.updateLatestConfidence(context.sessionId, input.confidenceScore);
       }
 
+      if (input.agentName === "Session Monitor") {
+        context.runtime.lastMonitorStatus = input;
+      }
+
       emit(context.repo, context.sse, {
         type: "agent_status",
         sessionId: context.sessionId,
-        agentName: "Session Monitor",
+        agentName: input.agentName,
         runId: context.runId,
         status: input.status,
         detail: input.message,
@@ -131,6 +160,8 @@ function buildTools() {
     name: "persist_design_brief",
     description: "Render and persist the Design Brief artifact for the active session.",
     parameters: DesignBriefSchema,
+    isEnabled: ({ runContext, agent }) =>
+      agent.name === "Design Planner" && !runContext.context.runtime.designBriefPersisted,
     execute: async (input, runContext) => {
       const context = runContext?.context;
       if (!context) return { ok: false };
@@ -159,7 +190,8 @@ function buildTools() {
       return {
         artifactId: artifact.id,
         templateType: artifact.templateType,
-        createdAt: artifact.createdAt
+        createdAt: artifact.createdAt,
+        brief: input
       };
     }
   });
@@ -168,6 +200,8 @@ function buildTools() {
     name: "persist_supply_order",
     description: "Render and persist the Supply Order artifact for the active session.",
     parameters: SupplyOrderSchema,
+    isEnabled: ({ runContext, agent }) =>
+      agent.name === "Supply Orchestrator" && !runContext.context.runtime.supplyOrderPersisted,
     execute: async (input, runContext) => {
       const context = runContext?.context;
       if (!context) return { ok: false };
@@ -178,6 +212,7 @@ function buildTools() {
         templateType: "supply-order",
         renderedContent: renderSupplyOrderHtml(input)
       });
+      context.runtime.supplyOrderPersisted = true;
 
       emit(context.repo, context.sse, {
         type: "artifact_ready",
@@ -195,7 +230,8 @@ function buildTools() {
       return {
         artifactId: artifact.id,
         templateType: artifact.templateType,
-        createdAt: artifact.createdAt
+        createdAt: artifact.createdAt,
+        order: input
       };
     }
   });
@@ -218,6 +254,7 @@ export function createAgentGraph(config: AppConfig) {
     instructions: SUPPLY_ORCHESTRATOR_PROMPT,
     model: config.opsModel,
     modelSettings: {
+      toolChoice: "persist_supply_order",
       reasoning: {
         effort: config.reasoningEffort,
         summary: "concise"
@@ -225,19 +262,39 @@ export function createAgentGraph(config: AppConfig) {
       text: {
         verbosity: "low"
       },
-      store: false,
+      store: true,
       parallelToolCalls: false
     },
     tools: [tools.loadSessionContext, tools.listArtifacts, tools.persistSupplyOrder, tools.publishStatusEvent],
+    toolUseBehavior: (_runContext, toolResults) => {
+      const persistedOrder = toolResults.find(
+        (toolResult) => toolResult.type === "function_output" && toolResult.tool.name === "persist_supply_order"
+      );
+
+      if (persistedOrder?.type !== "function_output") {
+        return {
+          isFinalOutput: false,
+          isInterrupted: undefined
+        };
+      }
+
+      const output = persistedOrder.output as { order?: unknown };
+      return {
+        isFinalOutput: true,
+        isInterrupted: undefined,
+        finalOutput: compactJson(output.order ?? {})
+      };
+    },
     outputType: SupplyOrderSchema as any
   });
 
   const designPlanner = new Agent<OpsRunContextValue, any>({
     name: "Design Planner",
     handoffDescription: "Turns a mature session into a structured Design Brief and then hands off to supply planning.",
-    instructions: DESIGN_PLANNER_PROMPT,
+    instructions: promptWithHandoffInstructions(DESIGN_PLANNER_PROMPT),
     model: config.opsModel,
     modelSettings: {
+      toolChoice: "persist_design_brief",
       reasoning: {
         effort: config.reasoningEffort,
         summary: "concise"
@@ -245,26 +302,30 @@ export function createAgentGraph(config: AppConfig) {
       text: {
         verbosity: "low"
       },
-      store: false,
+      store: true,
       parallelToolCalls: false
     },
     tools: [tools.loadSessionContext, tools.listArtifacts, tools.persistDesignBrief, tools.publishStatusEvent],
+    toolUseBehavior: () => ({
+      isFinalOutput: false,
+      isInterrupted: undefined
+    }),
     handoffs: [
       handoff(supplyOrchestrator, {
         isEnabled: ({ runContext }) =>
           Boolean((runContext as { context: OpsRunContextValue }).context.runtime.designBriefPersisted)
       })
     ],
-    handoffOutputTypeWarningEnabled: false,
-    outputType: DesignBriefSchema as any
+    handoffOutputTypeWarningEnabled: false
   });
 
   const sessionMonitor = new Agent<OpsRunContextValue, any>({
     name: "Session Monitor",
     handoffDescription: "Assesses customer-session maturity and decides when it is safe to start planning artifacts.",
-    instructions: SESSION_MONITOR_PROMPT,
+    instructions: promptWithHandoffInstructions(SESSION_MONITOR_PROMPT),
     model: config.opsModel,
     modelSettings: {
+      toolChoice: "publish_status_event",
       reasoning: {
         effort: config.reasoningEffort,
         summary: "concise"
@@ -272,10 +333,51 @@ export function createAgentGraph(config: AppConfig) {
       text: {
         verbosity: "low"
       },
-      store: false,
+      store: true,
       parallelToolCalls: false
     },
     tools: [tools.loadSessionContext, tools.listArtifacts, tools.publishStatusEvent],
+    toolUseBehavior: (runContext, toolResults) => {
+      const context = (runContext as { context: OpsRunContextValue }).context;
+      const publishedStatus = toolResults.some(
+        (toolResult) => toolResult.type === "function_output" && toolResult.tool.name === "publish_status_event"
+      );
+
+      if (!publishedStatus) {
+        return {
+          isFinalOutput: false,
+          isInterrupted: undefined
+        };
+      }
+
+      if ((context.runtime.monitorConfidence ?? 0) >= 0.8) {
+        return {
+          isFinalOutput: false,
+          isInterrupted: undefined
+        };
+      }
+
+      const status = context.runtime.lastMonitorStatus;
+      const output = status ? {
+        status_summary: status.message,
+        confidence_score: status.confidenceScore ?? 0,
+        risk_flags: status.riskFlags ?? [],
+        next_action: status.nextAction ?? "Continue gathering configuration detail.",
+        handoff_decision: "hold"
+      } : {
+        status_summary: "Monitor completed without a status payload.",
+        confidence_score: 0,
+        risk_flags: [],
+        next_action: "Continue gathering configuration detail.",
+        handoff_decision: "hold"
+      };
+
+      return {
+        isFinalOutput: true,
+        isInterrupted: undefined,
+        finalOutput: compactJson(output)
+      };
+    },
     handoffs: [
       handoff(designPlanner, {
         isEnabled: ({ runContext }) =>
@@ -378,18 +480,32 @@ class OpenAiOpsOrchestrator implements OpsOrchestrator {
       detail: `Run triggered by ${state.latestReason}`
     });
 
+    let currentAgentName = "Session Monitor";
+
     try {
       const stream = await run(
         this.entryAgent,
-        `Review the Northstar Vans session and continue the ops workflow. Trigger: ${state.latestReason}.`,
+        [
+          "Review the Northstar Vans session and continue the ops workflow.",
+          `Trigger: ${state.latestReason}.`,
+          `Session snapshot:\n${compactJson({
+            session: detail.session,
+            turns: detail.turns.slice(0, 8),
+            artifacts: context.artifacts.map((artifact) => ({
+              id: artifact.id,
+              agentName: artifact.agentName,
+              templateType: artifact.templateType,
+              createdAt: artifact.createdAt,
+              renderedContent: artifact.renderedContent
+            }))
+          })}`
+        ].join("\n\n"),
         {
           stream: true,
           context,
           maxTurns: 12
         }
       );
-
-      let currentAgentName = "Session Monitor";
 
       for await (const event of stream) {
         if (event.type === "agent_updated_stream_event") {
@@ -454,7 +570,7 @@ class OpenAiOpsOrchestrator implements OpsOrchestrator {
       emit(this.repo, this.sse, {
         type: "agent_failed",
         sessionId,
-        agentName: "Session Monitor",
+        agentName: currentAgentName,
         runId,
         status: "failed",
         detail: error instanceof Error ? error.message : "Unknown agent failure"

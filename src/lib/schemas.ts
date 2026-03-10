@@ -109,11 +109,12 @@ export const SupplyOrderSchema = z.object({
 });
 
 export const PublishStatusEventSchema = z.object({
+  agentName: z.enum(["Session Monitor", "Design Planner", "Supply Orchestrator"]),
   message: z.string().min(1).max(240),
-  status: z.enum(["thinking", "monitoring", "ready", "blocked"]).default("thinking"),
-  confidenceScore: z.number().min(0).max(1).optional(),
-  riskFlags: z.array(z.string()).max(6).optional(),
-  nextAction: z.string().max(200).optional()
+  status: z.enum(["thinking", "monitoring", "ready", "blocked"]),
+  confidenceScore: z.number().min(0).max(1).nullable(),
+  riskFlags: z.array(z.string()).max(6).nullable(),
+  nextAction: z.string().max(200).nullable()
 });
 
 export type SaveConfigurationStepInput = z.infer<typeof SaveConfigurationStepSchema>;
