@@ -214,8 +214,10 @@ export function createApp(runtime: RuntimeDeps = createRuntime()): Express {
     }
 
     try {
+      const previousSession = runtime.repository.getSession(req.params.id);
       const session = runtime.repository.saveStep(req.params.id, parsed.data);
       const visualSpec = runtime.repository.refreshVisualSpec(req.params.id);
+      const advanced = Boolean(previousSession && session.currentStep > previousSession.currentStep);
       runtime.sse.broadcast({
         type: "session_updated",
         sessionId: req.params.id,
@@ -244,7 +246,7 @@ export function createApp(runtime: RuntimeDeps = createRuntime()): Express {
       });
       runtime.visualizer.queueRun(req.params.id, `step:${parsed.data.step}`);
       runtime.orchestrator.queueRun(req.params.id, `step:${parsed.data.step}`);
-      res.json({ session, visualSpec });
+      res.json({ session, visualSpec, advanced });
     } catch (error) {
       const statusCode = error instanceof StepSequenceError ? 409 : error instanceof StepCaptureError ? 422 : 404;
       res.status(statusCode).json({

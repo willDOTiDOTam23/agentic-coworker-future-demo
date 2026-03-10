@@ -189,6 +189,57 @@ describe("server API", () => {
     fs.rmSync(runtime.tempDir, { recursive: true, force: true });
   });
 
+  it("supports draft step saves so visuals can update before the guide advances", async () => {
+    const runtime = createTestRuntime();
+    const session = runtime.repository.createSession("session-draft-saves");
+
+    const draftVision = await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
+      step: "vision",
+      values: {
+        useCase: "Quick surf weekender"
+      },
+      summary: "Quick surf weekender.",
+      advance: false
+    }).expect(200);
+
+    expect(draftVision.body.advanced).toBe(false);
+    expect(draftVision.body.session.currentStep).toBe(1);
+    expect(draftVision.body.session.state.vision.useCase).toBe("Quick surf weekender");
+    expect(draftVision.body.visualSpec.currentStep).toBe("vision");
+
+    const completedVision = await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
+      step: "vision",
+      values: {
+        vibeKeywords: ["Calm", "coastal"]
+      },
+      summary: "Calm, coastal vibe.",
+      advance: true
+    }).expect(200);
+
+    expect(completedVision.body.advanced).toBe(true);
+    expect(completedVision.body.session.currentStep).toBe(2);
+    expect(completedVision.body.session.state.vision.useCase).toBe("Quick surf weekender");
+    expect(completedVision.body.session.state.vision.vibeKeywords).toEqual(["Calm", "coastal"]);
+
+    const draftExterior = await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
+      step: "exterior",
+      values: {
+        exteriorColor: "Forest green"
+      },
+      summary: "Forest green exterior.",
+      advance: false
+    }).expect(200);
+
+    expect(draftExterior.body.advanced).toBe(false);
+    expect(draftExterior.body.session.currentStep).toBe(2);
+    expect(draftExterior.body.visualSpec.theme.backgroundLocked).toBe(true);
+    expect(draftExterior.body.visualSpec.theme.requestedExteriorColor).toBe("Forest green");
+    expect(draftExterior.body.visualSpec.currentStep).toBe("exterior");
+
+    runtime.db.close();
+    fs.rmSync(runtime.tempDir, { recursive: true, force: true });
+  });
+
   it("extracts exterior visuals from a summary-only save when the model omits flat keys", async () => {
     const runtime = createTestRuntime();
     const session = runtime.repository.createSession("session-summary-exterior");

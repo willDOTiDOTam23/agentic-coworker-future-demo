@@ -60,7 +60,7 @@ export async function saveConfigurationStep(sessionId: string, payload: SaveConf
     body: JSON.stringify(payload)
   });
 
-  return parseJson<{ session: ConfigurationSession; visualSpec: VisualizationSpec }>(response);
+  return parseJson<{ session: ConfigurationSession; visualSpec: VisualizationSpec; advanced: boolean }>(response);
 }
 
 export async function submitConfiguration(sessionId: string) {

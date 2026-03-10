@@ -163,7 +163,8 @@ function App() {
           values: parsedArguments.values,
           visualTone: parsedArguments.visualTone,
           paletteChoice: parsedArguments.paletteChoice,
-          summary: parsedArguments.summary
+          summary: parsedArguments.summary,
+          advance: parsedArguments.advance
         });
         const result = await saveConfigurationStep(sessionId, validated);
         applySession(result.session);
@@ -171,12 +172,15 @@ function App() {
         const nextStepId = getStepIdForNumber(result.session.currentStep);
         output = {
           ok: true,
+          advanced: result.advanced,
           currentStep: result.session.currentStep,
           nextStep: nextStepId,
           status: result.session.status
         };
         setStatusCopy(
-          validated.step === "gear"
+          !result.advanced
+            ? `Updated ${validated.step} preview.`
+            : validated.step === "gear"
             ? "Saved gear review."
             : `Saved ${validated.step}. Next: ${getStepLabel(nextStepId)}.`
         );

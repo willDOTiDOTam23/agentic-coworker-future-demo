@@ -78,7 +78,8 @@ export const SaveConfigurationStepSchema = z.object({
   values: ConfigurationValuesSchema,
   visualTone: z.string().trim().min(1).max(80).optional(),
   paletteChoice: z.string().trim().min(1).max(80).optional(),
-  summary: z.string().trim().min(1).max(280).optional()
+  summary: z.string().trim().min(1).max(280).optional(),
+  advance: z.boolean().optional()
 });
 
 export const MonitorOutputSchema = z.object({

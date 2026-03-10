@@ -104,7 +104,7 @@ input {
 
 .customer-layout {
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
   width: min(100%, 1080px, calc((100vh - 84px) * 1.42));
   height: 100%;
   margin: 0 auto;
@@ -921,8 +921,8 @@ input {
 
 .ops-grid {
   display: grid;
-  grid-template-columns: 280px minmax(420px, 1fr) minmax(360px, 400px);
-  gap: 16px;
+  grid-template-columns: minmax(304px, 0.92fr) minmax(520px, 1.28fr) minmax(440px, 1.04fr);
+  gap: 20px;
   padding: 10px 24px 24px;
   min-height: calc(100vh - 118px);
 }

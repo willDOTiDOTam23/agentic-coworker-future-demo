@@ -313,7 +313,14 @@ export class SqliteRepository {
       throw new StepSequenceError(activeStep, input.step);
     }
 
-    const capturedValues = canonicalizeStepValues(input.step, input.values, input.summary);
+    const capturedValues = canonicalizeStepValues(
+      input.step,
+      {
+        ...current.state[input.step],
+        ...input.values
+      },
+      input.summary
+    );
     if (!hasMeaningfulStepValues(input.step, capturedValues)) {
       throw new StepCaptureError(input.step);
     }
@@ -339,8 +346,8 @@ export class SqliteRepository {
     };
 
     const updatedAt = now();
-    const currentStep =
-      input.step === activeStep && current.currentStep < 5 ? current.currentStep + 1 : current.currentStep;
+    const shouldAdvance = input.step === activeStep && (input.advance ?? true);
+    const currentStep = shouldAdvance && current.currentStep < 5 ? current.currentStep + 1 : current.currentStep;
 
     this.db
       .prepare(
