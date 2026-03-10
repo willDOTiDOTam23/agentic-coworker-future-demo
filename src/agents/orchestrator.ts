@@ -183,7 +183,8 @@ function buildTools() {
         detail: "Design Brief generated",
         metadata: {
           artifactId: artifact.id,
-          templateType: artifact.templateType
+          templateType: artifact.templateType,
+          artifact
         }
       });
 
@@ -223,7 +224,8 @@ function buildTools() {
         detail: "Supply Order generated",
         metadata: {
           artifactId: artifact.id,
-          templateType: artifact.templateType
+          templateType: artifact.templateType,
+          artifact
         }
       });
 

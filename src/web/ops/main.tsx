@@ -12,6 +12,7 @@ interface OpsEvent {
   detail?: string;
   status?: string;
   timestamp: string;
+  metadata?: Record<string, unknown>;
 }
 
 type RightRailTab = "activity" | "artifacts";
@@ -23,6 +24,82 @@ function groupArtifacts(items: ArtifactRecord[]) {
   }, {});
 }
 
+function sortSessions(items: ConfigurationListItem[]) {
+  return [...items].sort((left, right) => {
+    const leftTimestamp = new Date(left.lastEventAt ?? left.updatedAt).getTime();
+    const rightTimestamp = new Date(right.lastEventAt ?? right.updatedAt).getTime();
+    return rightTimestamp - leftTimestamp;
+  });
+}
+
+function upsertSessionItem(
+  items: ConfigurationListItem[],
+  session: ConfigurationDetail["session"] | ConfigurationListItem,
+  options?: {
+    artifactCount?: number;
+    artifactCountDelta?: number;
+    lastEventAt?: string | null;
+  }
+) {
+  const current = items.find((item) => item.id === session.id);
+  const nextArtifactCount = Math.max(
+    0,
+    options?.artifactCount ??
+      ((current?.artifactCount ?? ("artifactCount" in session ? session.artifactCount : 0)) + (options?.artifactCountDelta ?? 0))
+  );
+  const nextItem: ConfigurationListItem = {
+    ...(current ?? {
+      artifactCount: 0,
+      lastEventAt: null
+    }),
+    ...session,
+    artifactCount: nextArtifactCount,
+    lastEventAt: options?.lastEventAt ?? current?.lastEventAt ?? ("lastEventAt" in session ? session.lastEventAt : null)
+  };
+
+  return sortSessions([nextItem, ...items.filter((item) => item.id !== session.id)]);
+}
+
+function mergeArtifactRecord(items: ArtifactRecord[], artifact: ArtifactRecord) {
+  return [artifact, ...items.filter((item) => item.id !== artifact.id)].sort(
+    (left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+  );
+}
+
+function mapAgentEventToOpsEvent(event: ConfigurationDetail["agentEvents"][number]): OpsEvent {
+  return {
+    type: event.eventType,
+    sessionId: event.sessionId,
+    agentName: event.agentName,
+    detail: event.displayText,
+    status: event.status,
+    timestamp: event.createdAt,
+    metadata: event.details ?? undefined
+  };
+}
+
+function mergeOpsEvents(historical: OpsEvent[], live: OpsEvent[]) {
+  const seen = new Set<string>();
+  return [...live, ...historical]
+    .filter((event) => {
+      const key = [
+        event.timestamp,
+        event.sessionId ?? "",
+        event.agentName ?? "",
+        event.status ?? "",
+        event.detail ?? "",
+        event.type
+      ].join("|");
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    })
+    .sort((left, right) => new Date(right.timestamp).getTime() - new Date(left.timestamp).getTime())
+    .slice(0, 30);
+}
+
 function App() {
   const [sessions, setSessions] = useState<ConfigurationListItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -32,26 +109,114 @@ function App() {
   const [search, setSearch] = useState("");
   const [rightRailTab, setRightRailTab] = useState<RightRailTab>("activity");
   const selectedIdRef = useRef<string | null>(null);
+  const sessionsRef = useRef<ConfigurationListItem[]>([]);
+  const detailCacheRef = useRef(new Map<string, ConfigurationDetail>());
+  const artifactCacheRef = useRef(new Map<string, ArtifactRecord[]>());
+  const inflightDetailRef = useRef(new Map<string, Promise<void>>());
   const deferredSearch = useDeferredValue(search);
 
-  const refreshSessions = useEffectEvent(async () => {
-    const next = await getConfigurations();
+  const cacheSessionData = useEffectEvent((sessionId: string, nextDetail: ConfigurationDetail, nextArtifacts: ArtifactRecord[]) => {
+    detailCacheRef.current.set(sessionId, nextDetail);
+    artifactCacheRef.current.set(sessionId, nextArtifacts);
+  });
+
+  const applyCachedSelection = useEffectEvent((sessionId: string) => {
+    const cachedDetail = detailCacheRef.current.get(sessionId) ?? null;
+    const cachedArtifacts = artifactCacheRef.current.get(sessionId) ?? [];
+
     startTransition(() => {
-      setSessions(next.items);
-      if (!selectedId && next.items[0]) {
-        setSelectedId(next.items[0].id);
-      }
-      if (selectedId && !next.items.find((item) => item.id === selectedId)) {
-        setSelectedId(next.items[0]?.id ?? null);
-      }
+      setDetail(cachedDetail);
+      setArtifacts(cachedArtifacts);
     });
   });
 
-  const refreshDetail = useEffectEvent(async (sessionId: string) => {
-    const [nextDetail, nextArtifacts] = await Promise.all([getConfiguration(sessionId), getArtifacts(sessionId)]);
+  const loadSessionData = useEffectEvent(async (sessionId: string, options?: { force?: boolean }) => {
+    applyCachedSelection(sessionId);
+    const hasCachedDetail = detailCacheRef.current.has(sessionId);
+    const hasCachedArtifacts = artifactCacheRef.current.has(sessionId);
+    if (hasCachedDetail && hasCachedArtifacts && !options?.force) {
+      return;
+    }
+
+    const existingRequest = inflightDetailRef.current.get(sessionId);
+    if (existingRequest) {
+      await existingRequest;
+      return;
+    }
+
+    const request = Promise.all([getConfiguration(sessionId), getArtifacts(sessionId)])
+      .then(([nextDetail, nextArtifacts]) => {
+        cacheSessionData(sessionId, nextDetail, nextArtifacts.items);
+        if (selectedIdRef.current === sessionId) {
+          startTransition(() => {
+            setDetail(nextDetail);
+            setArtifacts(nextArtifacts.items);
+          });
+        }
+      })
+      .finally(() => {
+        inflightDetailRef.current.delete(sessionId);
+      });
+
+    inflightDetailRef.current.set(sessionId, request);
+    await request;
+  });
+
+  const patchCachedSession = useEffectEvent((sessionId: string, updater: (current: ConfigurationDetail) => ConfigurationDetail) => {
+    const current = detailCacheRef.current.get(sessionId);
+    if (!current) {
+      return;
+    }
+
+    const next = updater(current);
+    detailCacheRef.current.set(sessionId, next);
+    if (selectedIdRef.current === sessionId) {
+      startTransition(() => {
+        setDetail(next);
+      });
+    }
+  });
+
+  const mergeSessionIntoList = useEffectEvent(
+    (
+      session: ConfigurationDetail["session"] | ConfigurationListItem,
+      options?: {
+        artifactCount?: number;
+        artifactCountDelta?: number;
+        lastEventAt?: string | null;
+      }
+    ) => {
+      startTransition(() => {
+        setSessions((current) => upsertSessionItem(current, session, options));
+      });
+    }
+  );
+
+  const mergeArtifactIntoCache = useEffectEvent((artifact: ArtifactRecord) => {
+    const currentArtifacts = artifactCacheRef.current.get(artifact.sessionId) ?? [];
+    const nextArtifacts = mergeArtifactRecord(currentArtifacts, artifact);
+    artifactCacheRef.current.set(artifact.sessionId, nextArtifacts);
+    if (selectedIdRef.current === artifact.sessionId) {
+      startTransition(() => {
+        setArtifacts(nextArtifacts);
+      });
+    }
+  });
+
+  const refreshSessions = useEffectEvent(async () => {
+    const next = await getConfigurations();
+    const preferredId =
+      selectedIdRef.current && next.items.find((item) => item.id === selectedIdRef.current)
+        ? selectedIdRef.current
+        : next.items[0]?.id ?? null;
+
     startTransition(() => {
-      setDetail(nextDetail);
-      setArtifacts(nextArtifacts.items);
+      setSessions(sortSessions(next.items));
+      setSelectedId(preferredId);
+    });
+
+    next.items.slice(0, 3).forEach((item) => {
+      void loadSessionData(item.id);
     });
   });
 
@@ -60,13 +225,24 @@ function App() {
   }, [refreshSessions]);
 
   useEffect(() => {
-    if (!selectedId) return;
-    void refreshDetail(selectedId);
-  }, [refreshDetail, selectedId]);
+    if (!selectedId) {
+      startTransition(() => {
+        setDetail(null);
+        setArtifacts([]);
+      });
+      return;
+    }
+
+    void loadSessionData(selectedId);
+  }, [loadSessionData, selectedId]);
 
   useEffect(() => {
     selectedIdRef.current = selectedId;
   }, [selectedId]);
+
+  useEffect(() => {
+    sessionsRef.current = sessions;
+  }, [sessions]);
 
   useEffect(() => {
     const source = new EventSource("/api/ops/stream");
@@ -76,18 +252,74 @@ function App() {
         return;
       }
 
+      if (payload.type === "session_updated") {
+        const nextSession = payload.metadata?.session as ConfigurationDetail["session"] | undefined;
+        if (nextSession) {
+          mergeSessionIntoList(nextSession, { lastEventAt: payload.timestamp });
+          patchCachedSession(nextSession.id, (current) => ({
+            ...current,
+            session: nextSession
+          }));
+          if (!selectedIdRef.current) {
+            startTransition(() => {
+              setSelectedId(nextSession.id);
+            });
+          }
+        }
+        return;
+      }
+
       startTransition(() => {
         setEvents((current) => [payload, ...current].slice(0, 30));
       });
 
-      void refreshSessions();
-      if (payload.sessionId && payload.sessionId === selectedIdRef.current) {
-        void refreshDetail(payload.sessionId);
+      if (payload.sessionId) {
+        const matchingSession = sessionsRef.current.find((session) => session.id === payload.sessionId);
+        if (matchingSession) {
+          mergeSessionIntoList(matchingSession, {
+            artifactCountDelta: payload.type === "artifact_ready" ? 1 : 0,
+            lastEventAt: payload.timestamp
+          });
+        }
+
+        const confidenceScore = payload.metadata?.confidenceScore;
+        if (typeof confidenceScore === "number") {
+          patchCachedSession(payload.sessionId, (current) => ({
+            ...current,
+            session: {
+              ...current.session,
+              latestConfidence: confidenceScore
+            }
+          }));
+          const currentListSession = sessionsRef.current.find((session) => session.id === payload.sessionId);
+          if (currentListSession) {
+            mergeSessionIntoList(
+              {
+                ...currentListSession,
+                latestConfidence: confidenceScore
+              },
+              { lastEventAt: payload.timestamp }
+            );
+          }
+        }
+
+        if (payload.type === "artifact_ready") {
+          const artifact = payload.metadata?.artifact as ArtifactRecord | undefined;
+          if (artifact) {
+            mergeArtifactIntoCache(artifact);
+          } else {
+            void loadSessionData(payload.sessionId, { force: true });
+          }
+        }
+
+        if (payload.sessionId === selectedIdRef.current && !detailCacheRef.current.has(payload.sessionId)) {
+          void loadSessionData(payload.sessionId, { force: true });
+        }
       }
     };
 
     return () => source.close();
-  }, [refreshDetail, refreshSessions]);
+  }, [loadSessionData, mergeArtifactIntoCache, mergeSessionIntoList, patchCachedSession]);
 
   const filteredSessions = sessions.filter((session) => {
     const searchValue = deferredSearch.trim().toLowerCase();
@@ -98,7 +330,25 @@ function App() {
 
   const palette = derivePalette(detail?.session, detail?.visualSpec);
   const groupedArtifacts = groupArtifacts(artifacts);
-  const scopedEvents = events.filter((event) => !selectedId || !event.sessionId || event.sessionId === selectedId);
+  const scopedEvents = mergeOpsEvents(
+    (detail?.agentEvents ?? []).map(mapAgentEventToOpsEvent).filter((event) => !selectedId || event.sessionId === selectedId),
+    events.filter((event) => !selectedId || !event.sessionId || event.sessionId === selectedId)
+  );
+
+  const handleReset = useEffectEvent(async () => {
+    await resetDemo();
+    detailCacheRef.current.clear();
+    artifactCacheRef.current.clear();
+    inflightDetailRef.current.clear();
+    startTransition(() => {
+      setSessions([]);
+      setSelectedId(null);
+      setDetail(null);
+      setArtifacts([]);
+      setEvents([]);
+    });
+    await refreshSessions();
+  });
 
   useEffect(() => {
     const root = document.documentElement;
@@ -114,7 +364,7 @@ function App() {
   return (
     <div className="shell">
       <div className="frame">
-        <div className="nav">
+          <div className="nav">
           <div className="brand">
             <span className="brand-mark" />
             <div>
@@ -123,7 +373,7 @@ function App() {
             </div>
           </div>
           <div style={{ display: "flex", gap: 12 }}>
-            <button className="nav-link" onClick={() => void resetDemo()}>
+            <button className="nav-link" onClick={() => void handleReset()}>
               Reset demo
             </button>
             <a className="nav-link" href="/customer.html">
@@ -148,6 +398,8 @@ function App() {
                     key={session.id}
                     className={`session-card ${session.id === selectedId ? "active" : ""}`.trim()}
                     onClick={() => setSelectedId(session.id)}
+                    onFocus={() => void loadSessionData(session.id)}
+                    onMouseEnter={() => void loadSessionData(session.id)}
                   >
                     <div className="session-meta">
                       <span>{session.status}</span>

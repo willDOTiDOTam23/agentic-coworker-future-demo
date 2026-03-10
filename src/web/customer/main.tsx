@@ -10,11 +10,6 @@ import { Waveform } from "../shared/Waveform.js";
 import "../shared/styles.css";
 
 type ConnectionState = "idle" | "connecting" | "connected" | "error";
-type TranscriptEntry = {
-  id: string;
-  speaker: "customer" | "guide";
-  text: string;
-};
 
 function emptyWaveform() {
   return new Array(24).fill(0.12);
@@ -70,7 +65,6 @@ function App() {
   const [statusCopy, setStatusCopy] = useState("Ready when you are.");
   const [session, setSession] = useState<ConfigurationSession | null>(null);
   const [visualSpec, setVisualSpec] = useState<VisualizationSpec | null>(null);
-  const [transcriptEntries, setTranscriptEntries] = useState<TranscriptEntry[]>([]);
   const [customerWave, setCustomerWave] = useState<number[]>(emptyWaveform());
   const [assistantWave, setAssistantWave] = useState<number[]>(emptyWaveform());
 
@@ -80,8 +74,6 @@ function App() {
   const peerRef = useRef<RTCPeerConnection | null>(null);
   const localCleanupRef = useRef<(() => void) | null>(null);
   const remoteCleanupRef = useRef<(() => void) | null>(null);
-  const currentAssistantTranscriptRef = useRef("");
-  const currentAssistantMessageIdRef = useRef<string | null>(null);
   const handledFunctionCallsRef = useRef<Set<string>>(new Set());
   const responseInFlightRef = useRef(false);
 
@@ -119,55 +111,6 @@ function App() {
 
   const sendRealtimeEvent = useEffectEvent((payload: Record<string, unknown>) => {
     dataChannelRef.current?.send(JSON.stringify(payload));
-  });
-
-  const addTranscriptEntry = useEffectEvent((speaker: TranscriptEntry["speaker"], text: string) => {
-    const normalized = text.trim();
-    if (!normalized) {
-      return;
-    }
-
-    setTranscriptEntries((current) =>
-      [
-        ...current,
-        {
-          id: `${speaker}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          speaker,
-          text: normalized
-        }
-      ].slice(-3)
-    );
-  });
-
-  const streamAssistantTranscript = useEffectEvent((delta: string) => {
-    const nextText = `${currentAssistantTranscriptRef.current}${delta}`.trim();
-    currentAssistantTranscriptRef.current = nextText;
-    if (!nextText) {
-      return;
-    }
-
-    const messageId = currentAssistantMessageIdRef.current ?? `guide-${Date.now()}`;
-    currentAssistantMessageIdRef.current = messageId;
-
-    setTranscriptEntries((current) => {
-      const existingIndex = current.findIndex((entry) => entry.id === messageId);
-      if (existingIndex === -1) {
-        const nextEntries: TranscriptEntry[] = [...current, { id: messageId, speaker: "guide", text: nextText }];
-        return nextEntries.slice(-3);
-      }
-
-      const next = [...current];
-      next[existingIndex] = {
-        ...next[existingIndex],
-        text: nextText
-      };
-      return next.slice(-3);
-    });
-  });
-
-  const finalizeAssistantTranscript = useEffectEvent(() => {
-    currentAssistantTranscriptRef.current = "";
-    currentAssistantMessageIdRef.current = null;
   });
 
   const requestModelResponse = useEffectEvent((response?: Record<string, unknown>) => {
@@ -277,11 +220,6 @@ function App() {
       return;
     }
 
-    if (payload.type === "response.output_audio_transcript.delta" || payload.type === "response.output_text.delta") {
-      streamAssistantTranscript(String(payload.delta ?? ""));
-      return;
-    }
-
     if (payload.type === "response.done") {
       responseInFlightRef.current = false;
       const output = (payload.response as { output?: Array<Record<string, unknown>> } | undefined)?.output ?? [];
@@ -290,13 +228,6 @@ function App() {
         await handleFunctionCall(functionCall);
         return;
       }
-
-      finalizeAssistantTranscript();
-      return;
-    }
-
-    if (payload.type === "conversation.item.input_audio_transcription.completed") {
-      addTranscriptEntry("customer", String(payload.transcript ?? ""));
       return;
     }
 
@@ -320,12 +251,10 @@ function App() {
 
     setConnectionState("connecting");
     setStatusCopy("Connecting voice...");
-    setTranscriptEntries([]);
     setVisualSpec(null);
     sessionStreamRef.current?.close();
     handledFunctionCallsRef.current.clear();
     responseInFlightRef.current = false;
-    finalizeAssistantTranscript();
 
     try {
       const realtime = await createRealtimeSession();
@@ -468,20 +397,6 @@ function App() {
                   <strong>{currentStepLabel}</strong>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="panel transcript-panel">
-            <div className="transcript-thread" aria-live="polite">
-              {transcriptEntries.length === 0 ? (
-                <div className="transcript-bubble guide empty">Conversation appears here.</div>
-              ) : (
-                transcriptEntries.map((entry) => (
-                  <div key={entry.id} className={`transcript-bubble ${entry.speaker === "customer" ? "customer" : "guide"}`}>
-                    {entry.text}
-                  </div>
-                ))
-              )}
             </div>
           </div>
 

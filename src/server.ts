@@ -121,8 +121,22 @@ export function createApp(runtime: RuntimeDeps = createRuntime()): Express {
     try {
       assertOpenAiConfigured(runtime.config);
       const sessionId = randomUUID();
-      runtime.repository.createSession(sessionId);
+      const session = runtime.repository.createSession(sessionId);
       const clientSecret = await createRealtimeClientSecret(runtime.config, sessionId);
+      runtime.sse.broadcast({
+        type: "session_updated",
+        sessionId,
+        agentName: "Customer Session",
+        runId: `session-${Date.now()}`,
+        status: "created",
+        detail: "Voice build started",
+        timestamp: new Date().toISOString(),
+        metadata: {
+          source: "created",
+          session
+        }
+      });
+      runtime.orchestrator.queueRun(sessionId, "session-created");
 
       res.status(201).json({
         sessionId,
@@ -303,7 +317,7 @@ export function createApp(runtime: RuntimeDeps = createRuntime()): Express {
 
     runtime.sse.addClient(
       res,
-      (payload) => payload.type !== "visual_spec_updated" && payload.type !== "session_updated"
+      (payload) => payload.type !== "visual_spec_updated"
     );
     res.write(`data: ${JSON.stringify({ type: "connected", timestamp: new Date().toISOString() })}\n\n`);
 
