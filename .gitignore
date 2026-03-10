@@ -16,8 +16,13 @@ pnpm-debug.log*
 
 # Dependency directories
 node_modules/
+dist/
 
 # IDE/editor files
 .idea/
 .vscode/
 
+# SQLite and test artifacts
+*.db
+playwright-report/
+test-results/
