@@ -232,7 +232,6 @@ input {
 
 .waveform-grid {
   display: grid;
-  gap: 12px;
 }
 
 .waveform-panel {
@@ -242,26 +241,88 @@ input {
 }
 
 .waveform-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.waveform-title {
   font-size: 12px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   opacity: 0.66;
 }
 
+.waveform-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.waveform-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.62;
+}
+
+.waveform-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+}
+
+.waveform-swatch-guide {
+  background: linear-gradient(180deg, var(--accent-alt), var(--accent));
+}
+
+.waveform-swatch-customer {
+  background: linear-gradient(180deg, var(--cabin), var(--ink));
+}
+
 .waveform-bars {
   margin-top: 12px;
+  position: relative;
   display: grid;
   grid-template-columns: repeat(24, 1fr);
-  align-items: end;
+  align-items: stretch;
   gap: 4px;
-  height: 72px;
+  height: 104px;
+}
+
+.waveform-bars::before {
+  content: "";
+  position: absolute;
+  inset: calc(50% - 0.5px) 0 auto;
+  height: 1px;
+  background: rgba(24, 33, 37, 0.12);
+}
+
+.waveform-column {
+  position: relative;
+  min-height: 100%;
 }
 
 .waveform-bar {
+  position: absolute;
+  left: 0;
   width: 100%;
   border-radius: 999px;
+  transition: height 80ms linear, opacity 140ms ease;
+}
+
+.waveform-bar-guide {
+  bottom: calc(50% + 4px);
   background: linear-gradient(180deg, var(--accent-alt), var(--accent));
-  transition: height 80ms linear;
+}
+
+.waveform-bar-customer {
+  top: calc(50% + 4px);
+  background: linear-gradient(180deg, var(--cabin), var(--ink));
 }
 
 .van-stage {
@@ -532,4 +593,3 @@ input {
     min-height: auto;
   }
 }
-

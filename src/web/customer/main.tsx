@@ -52,6 +52,8 @@ function App() {
   const localCleanupRef = useRef<(() => void) | null>(null);
   const remoteCleanupRef = useRef<(() => void) | null>(null);
   const currentAssistantTranscriptRef = useRef("");
+  const handledFunctionCallsRef = useRef<Set<string>>(new Set());
+  const responseInFlightRef = useRef(false);
 
   const applySession = useEffectEvent((nextSession: ConfigurationSession) => {
     sessionIdRef.current = nextSession.id;
@@ -62,16 +64,35 @@ function App() {
     dataChannelRef.current?.send(JSON.stringify(payload));
   });
 
+  const requestModelResponse = useEffectEvent((response?: Record<string, unknown>) => {
+    if (responseInFlightRef.current) {
+      return false;
+    }
+
+    responseInFlightRef.current = true;
+    if (response) {
+      sendRealtimeEvent({
+        type: "response.create",
+        response
+      });
+      return true;
+    }
+
+    sendRealtimeEvent({ type: "response.create" });
+    return true;
+  });
+
   const handleFunctionCall = useEffectEvent(async (item: Record<string, unknown>) => {
     const callId = String(item.call_id ?? item.callId ?? item.id ?? "");
     const toolName = String(item.name ?? "");
     const rawArguments = String(item.arguments ?? "{}");
     const sessionId = sessionIdRef.current;
 
-    if (!sessionId || !callId || !toolName) {
+    if (!sessionId || !callId || !toolName || handledFunctionCallsRef.current.has(callId)) {
       return;
     }
 
+    handledFunctionCallsRef.current.add(callId);
     let output: Record<string, unknown> = { ok: false };
 
     try {
@@ -129,11 +150,16 @@ function App() {
         status: "completed"
       }
     });
-    sendRealtimeEvent({ type: "response.create" });
+    requestModelResponse();
   });
 
   const handleRealtimeMessage = useEffectEvent(async (event: MessageEvent<string>) => {
     const payload = JSON.parse(event.data) as Record<string, unknown>;
+
+    if (payload.type === "response.created") {
+      responseInFlightRef.current = true;
+      return;
+    }
 
     if (payload.type === "response.output_audio_transcript.delta" || payload.type === "response.output_text.delta") {
       currentAssistantTranscriptRef.current += String(payload.delta ?? "");
@@ -142,6 +168,7 @@ function App() {
     }
 
     if (payload.type === "response.done") {
+      responseInFlightRef.current = false;
       const output = (payload.response as { output?: Array<Record<string, unknown>> } | undefined)?.output ?? [];
       const functionCall = output.find((item) => item.type === "function_call");
       if (functionCall) {
@@ -153,26 +180,33 @@ function App() {
       return;
     }
 
-    if (payload.type === "response.function_call_arguments.done") {
-      const item = (payload.item as Record<string, unknown> | undefined) ?? payload;
-      await handleFunctionCall(item);
-      return;
-    }
-
     if (payload.type === "conversation.item.input_audio_transcription.completed") {
       setCustomerTranscript(String(payload.transcript ?? ""));
       return;
     }
 
     if (payload.type === "error") {
+      const message = String((payload.error as { message?: string } | undefined)?.message ?? "Realtime error.");
+      if (message.includes("active response in progress")) {
+        setStatusCopy("The guide is still finishing a thought. Waiting to continue cleanly.");
+        return;
+      }
+
+      responseInFlightRef.current = false;
       setConnectionState("error");
-      setStatusCopy(String((payload.error as { message?: string } | undefined)?.message ?? "Realtime error."));
+      setStatusCopy(message);
     }
   });
 
   async function startVoiceBuild() {
+    if (connectionState === "connecting" || connectionState === "connected") {
+      return;
+    }
+
     setConnectionState("connecting");
     setStatusCopy("Requesting the latest Realtime session and microphone access...");
+    handledFunctionCallsRef.current.clear();
+    responseInFlightRef.current = false;
 
     try {
       const realtime = await createRealtimeSession();
@@ -210,12 +244,9 @@ function App() {
       channel.addEventListener("open", () => {
         setConnectionState("connected");
         setStatusCopy("Connected. The guide is ready to talk.");
-        sendRealtimeEvent({
-          type: "response.create",
-          response: {
-            instructions:
-              "Greet the customer and begin step one with a single short question about the vision and use case."
-          }
+        requestModelResponse({
+          instructions:
+            "Greet the customer and begin step one with a single short question about the vision and use case."
         });
       });
 
@@ -296,8 +327,16 @@ function App() {
                 The UI gets out of the way. A single voice guide walks the customer through a five-step
                 build and the van comes alive as the conversation sharpens.
               </p>
-              <button className="voice-cta" disabled={connectionState === "connecting"} onClick={startVoiceBuild}>
-                {connectionState === "connected" ? "Voice build live" : "Start voice build"}
+              <button
+                className="voice-cta"
+                disabled={connectionState === "connecting" || connectionState === "connected"}
+                onClick={startVoiceBuild}
+              >
+                {connectionState === "connected"
+                  ? "Voice build live"
+                  : connectionState === "error"
+                    ? "Restart voice build"
+                    : "Start voice build"}
               </button>
 
               <div className="status-strip">
@@ -335,10 +374,9 @@ function App() {
 
           <div className="visual-column">
             <div className="panel">
-              <h2 className="panel-title">Dual waveforms</h2>
+              <h2 className="panel-title">Shared waveform</h2>
               <div className="waveform-grid">
-                <Waveform label="Customer" values={customerWave} />
-                <Waveform label="Guide" values={assistantWave} />
+                <Waveform customerValues={customerWave} guideValues={assistantWave} />
               </div>
             </div>
 
@@ -358,4 +396,3 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </React.StrictMode>
 );
-
