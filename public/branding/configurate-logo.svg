@@ -1,0 +1,13 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="24" y="24" width="272" height="272" rx="64" fill="url(#g1)"/>
+  <path d="M218 90C170 65 111 78 78 124C43 173 52 239 101 276C147 311 211 306 252 266" stroke="white" stroke-width="30" stroke-linecap="round"/>
+  <rect x="197" y="83" width="34" height="34" rx="9" fill="white"/>
+  <rect x="197" y="235" width="34" height="34" rx="9" fill="white"/>
+  <text x="340" y="197" fill="#0B1320" font-size="122" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif" font-weight="650" letter-spacing="-2">Configurate</text>
+  <defs>
+    <linearGradient id="g1" x1="42" y1="40" x2="264" y2="278" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#103A91"/>
+      <stop offset="1" stop-color="#3F95FF"/>
+    </linearGradient>
+  </defs>
+</svg>

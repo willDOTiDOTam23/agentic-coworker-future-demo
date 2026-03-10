@@ -1,0 +1,227 @@
+{
+  "generatedAt": "2026-02-17T04:07:55.723288+00:00",
+  "totalAssets": 10,
+  "status": "generated",
+  "assets": [
+    {
+      "assetId": "template-sable-escape",
+      "assetType": "template",
+      "path": "public/assets/van-styles/sable-escape.png",
+      "prompt": "A cinematic stylized realism and hyper-real CGI image in a consistent visual family called \"muted-adventure-suite\": clean architectural concept-art composition, matte painting look, cinematic color grading, coherent outdoor palette, polished materials, coherent product-shape language. Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights. Keep the same camera feel across all renders with natural three-quarter hero angle, soft horizon bloom, consistent light direction and balanced contrast. Use one shared style system for all assets: same 45mm lens perspective, same depth feel, same environmental haze, same paint material response, same edge lighting, same shadow architecture, same weather-neutral outdoor mood. Do not include any readable text, labels, captions, numbers, logos, decals, signage, UI, watermarks, license plates, or model badges anywhere in the image. Asset type: template. Reference role: adventure van concept render. Title: Sable Escape. Subject: Beach-to-forest adventure van, warm horizon scene. Details: Lifted expedition van with matte sand-beige skin, compact camp kit integration, subtle rear utility shell and compact mountain-ready proportion..",
+      "style": {
+        "styleKey": "muted-adventure-suite",
+        "palette": "Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights.",
+        "generatedAt": "2026-02-17T04:04:58.157167+00:00",
+        "modelHint": "dall-e-3",
+        "seedHint": "adventure-v1",
+        "useCase": "stylized-concept",
+        "sourceUrl": "https://images.pexels.com/photos/32378665/pexels-photo-32378665.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+        "license": "pexels",
+        "attributionRequired": false,
+        "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+      },
+      "sourceUrl": "https://images.pexels.com/photos/32378665/pexels-photo-32378665.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "license": "pexels",
+      "attributionRequired": false,
+      "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+    },
+    {
+      "assetId": "template-ridge-ramble",
+      "assetType": "template",
+      "path": "public/assets/van-styles/ridge-ramble.png",
+      "prompt": "A cinematic stylized realism and hyper-real CGI image in a consistent visual family called \"muted-adventure-suite\": clean architectural concept-art composition, matte painting look, cinematic color grading, coherent outdoor palette, polished materials, coherent product-shape language. Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights. Keep the same camera feel across all renders with natural three-quarter hero angle, soft horizon bloom, consistent light direction and balanced contrast. Use one shared style system for all assets: same 45mm lens perspective, same depth feel, same environmental haze, same paint material response, same edge lighting, same shadow architecture, same weather-neutral outdoor mood. Do not include any readable text, labels, captions, numbers, logos, decals, signage, UI, watermarks, license plates, or model badges anywhere in the image. Asset type: template. Reference role: adventure van concept render. Title: Ridge Ramble. Subject: Mountain trail adventure van, muted green setting. Details: Wide-tired expedition shell with reinforced rack hardware, utility rail contrast, and disciplined cool-green highlights..",
+      "style": {
+        "styleKey": "muted-adventure-suite",
+        "palette": "Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights.",
+        "generatedAt": "2026-02-17T04:05:22.212025+00:00",
+        "modelHint": "dall-e-3",
+        "seedHint": "adventure-v1",
+        "useCase": "stylized-concept",
+        "sourceUrl": "https://images.pexels.com/photos/29710911/pexels-photo-29710911.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+        "license": "pexels",
+        "attributionRequired": false,
+        "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+      },
+      "sourceUrl": "https://images.pexels.com/photos/29710911/pexels-photo-29710911.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "license": "pexels",
+      "attributionRequired": false,
+      "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+    },
+    {
+      "assetId": "template-dune-nomad",
+      "assetType": "template",
+      "path": "public/assets/van-styles/dune-nomad.png",
+      "prompt": "A cinematic stylized realism and hyper-real CGI image in a consistent visual family called \"muted-adventure-suite\": clean architectural concept-art composition, matte painting look, cinematic color grading, coherent outdoor palette, polished materials, coherent product-shape language. Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights. Keep the same camera feel across all renders with natural three-quarter hero angle, soft horizon bloom, consistent light direction and balanced contrast. Use one shared style system for all assets: same 45mm lens perspective, same depth feel, same environmental haze, same paint material response, same edge lighting, same shadow architecture, same weather-neutral outdoor mood. Do not include any readable text, labels, captions, numbers, logos, decals, signage, UI, watermarks, license plates, or model badges anywhere in the image. Asset type: template. Reference role: adventure van concept render. Title: Dune Nomad. Subject: Modern desert-and-city crossover concept with work-ready interior tone. Details: Sleek gray-toned adventure shell with angular architecture, low-profile cargo silhouette, and quiet utility interior cue..",
+      "style": {
+        "styleKey": "muted-adventure-suite",
+        "palette": "Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights.",
+        "generatedAt": "2026-02-17T04:05:47.520251+00:00",
+        "modelHint": "dall-e-3",
+        "seedHint": "adventure-v1",
+        "useCase": "stylized-concept",
+        "sourceUrl": "https://images.pexels.com/photos/13134378/pexels-photo-13134378.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+        "license": "pexels",
+        "attributionRequired": false,
+        "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+      },
+      "sourceUrl": "https://images.pexels.com/photos/13134378/pexels-photo-13134378.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "license": "pexels",
+      "attributionRequired": false,
+      "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+    },
+    {
+      "assetId": "template-lumina-lounger",
+      "assetType": "template",
+      "path": "public/assets/van-styles/luminis-lounger.png",
+      "prompt": "A cinematic stylized realism and hyper-real CGI image in a consistent visual family called \"muted-adventure-suite\": clean architectural concept-art composition, matte painting look, cinematic color grading, coherent outdoor palette, polished materials, coherent product-shape language. Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights. Keep the same camera feel across all renders with natural three-quarter hero angle, soft horizon bloom, consistent light direction and balanced contrast. Use one shared style system for all assets: same 45mm lens perspective, same depth feel, same environmental haze, same paint material response, same edge lighting, same shadow architecture, same weather-neutral outdoor mood. Do not include any readable text, labels, captions, numbers, logos, decals, signage, UI, watermarks, license plates, or model badges anywhere in the image. Asset type: template. Reference role: adventure van concept render. Title: Luminis Lounger. Subject: Luxury concept with warm night-ready ambience. Details: Premium shell geometry, premium cabin geometry cues, amber and peach ambient interior glow and soft matte reflection..",
+      "style": {
+        "styleKey": "muted-adventure-suite",
+        "palette": "Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights.",
+        "generatedAt": "2026-02-17T04:06:11.381836+00:00",
+        "modelHint": "dall-e-3",
+        "seedHint": "adventure-v1",
+        "useCase": "stylized-concept",
+        "sourceUrl": "https://images.pexels.com/photos/5581740/pexels-photo-5581740.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+        "license": "pexels",
+        "attributionRequired": false,
+        "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+      },
+      "sourceUrl": "https://images.pexels.com/photos/5581740/pexels-photo-5581740.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "license": "pexels",
+      "attributionRequired": false,
+      "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+    },
+    {
+      "assetId": "option-solar-panels",
+      "assetType": "accessory",
+      "path": "public/assets/accessories/solar-panels.png",
+      "prompt": "A cinematic stylized realism and hyper-real CGI image in a consistent visual family called \"muted-adventure-suite\": clean architectural concept-art composition, matte painting look, cinematic color grading, coherent outdoor palette, polished materials, coherent product-shape language. Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights. Keep the same camera feel across all renders with natural three-quarter hero angle, soft horizon bloom, consistent light direction and balanced contrast. Use one shared style system for all assets: same 45mm lens perspective, same depth feel, same environmental haze, same paint material response, same edge lighting, same shadow architecture, same weather-neutral outdoor mood. Do not include any readable text, labels, captions, numbers, logos, decals, signage, UI, watermarks, license plates, or model badges anywhere in the image. Asset type: accessory. Reference role: accessory module. Title: Solar Panel Kit. Subject: Roof-mounted solar concept. Details: Roof-integrated solar module with clean fastener lines and compact cable conduit integration..",
+      "style": {
+        "styleKey": "muted-adventure-suite",
+        "palette": "Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights.",
+        "generatedAt": "2026-02-17T04:06:30.722032+00:00",
+        "modelHint": "dall-e-3",
+        "seedHint": "adventure-v1",
+        "useCase": "stylized-concept",
+        "sourceUrl": "https://images.pexels.com/photos/356049/pexels-photo-356049.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+        "license": "pexels",
+        "attributionRequired": false,
+        "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+      },
+      "sourceUrl": "https://images.pexels.com/photos/356049/pexels-photo-356049.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "license": "pexels",
+      "attributionRequired": false,
+      "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+    },
+    {
+      "assetId": "option-shower-module",
+      "assetType": "accessory",
+      "path": "public/assets/accessories/shower-module.png",
+      "prompt": "A cinematic stylized realism and hyper-real CGI image in a consistent visual family called \"muted-adventure-suite\": clean architectural concept-art composition, matte painting look, cinematic color grading, coherent outdoor palette, polished materials, coherent product-shape language. Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights. Keep the same camera feel across all renders with natural three-quarter hero angle, soft horizon bloom, consistent light direction and balanced contrast. Use one shared style system for all assets: same 45mm lens perspective, same depth feel, same environmental haze, same paint material response, same edge lighting, same shadow architecture, same weather-neutral outdoor mood. Do not include any readable text, labels, captions, numbers, logos, decals, signage, UI, watermarks, license plates, or model badges anywhere in the image. Asset type: accessory. Reference role: accessory module. Title: Shower Module. Subject: Mobile utility shower add-on concept. Details: Privacy-shell shower module with matte shell materials and practical utility geometry..",
+      "style": {
+        "styleKey": "muted-adventure-suite",
+        "palette": "Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights.",
+        "generatedAt": "2026-02-17T04:06:47.043086+00:00",
+        "modelHint": "dall-e-3",
+        "seedHint": "adventure-v1",
+        "useCase": "stylized-concept",
+        "sourceUrl": "https://images.pexels.com/photos/29987674/pexels-photo-29987674.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+        "license": "pexels",
+        "attributionRequired": false,
+        "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+      },
+      "sourceUrl": "https://images.pexels.com/photos/29987674/pexels-photo-29987674.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "license": "pexels",
+      "attributionRequired": false,
+      "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+    },
+    {
+      "assetId": "option-portable-fridge",
+      "assetType": "accessory",
+      "path": "public/assets/accessories/fridge-module.png",
+      "prompt": "A cinematic stylized realism and hyper-real CGI image in a consistent visual family called \"muted-adventure-suite\": clean architectural concept-art composition, matte painting look, cinematic color grading, coherent outdoor palette, polished materials, coherent product-shape language. Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights. Keep the same camera feel across all renders with natural three-quarter hero angle, soft horizon bloom, consistent light direction and balanced contrast. Use one shared style system for all assets: same 45mm lens perspective, same depth feel, same environmental haze, same paint material response, same edge lighting, same shadow architecture, same weather-neutral outdoor mood. Do not include any readable text, labels, captions, numbers, logos, decals, signage, UI, watermarks, license plates, or model badges anywhere in the image. Asset type: accessory. Reference role: accessory module. Title: Fridge Module. Subject: Refrigeration utility pod. Details: Compact cooling module with integrated hatch and subtle directional line art in matte finish..",
+      "style": {
+        "styleKey": "muted-adventure-suite",
+        "palette": "Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights.",
+        "generatedAt": "2026-02-17T04:07:10.874461+00:00",
+        "modelHint": "dall-e-3",
+        "seedHint": "adventure-v1",
+        "useCase": "stylized-concept",
+        "sourceUrl": "https://images.pexels.com/photos/14841578/pexels-photo-14841578.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+        "license": "pexels",
+        "attributionRequired": false,
+        "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+      },
+      "sourceUrl": "https://images.pexels.com/photos/14841578/pexels-photo-14841578.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "license": "pexels",
+      "attributionRequired": false,
+      "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+    },
+    {
+      "assetId": "option-bike-rack",
+      "assetType": "accessory",
+      "path": "public/assets/accessories/bike-rack.png",
+      "prompt": "A cinematic stylized realism and hyper-real CGI image in a consistent visual family called \"muted-adventure-suite\": clean architectural concept-art composition, matte painting look, cinematic color grading, coherent outdoor palette, polished materials, coherent product-shape language. Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights. Keep the same camera feel across all renders with natural three-quarter hero angle, soft horizon bloom, consistent light direction and balanced contrast. Use one shared style system for all assets: same 45mm lens perspective, same depth feel, same environmental haze, same paint material response, same edge lighting, same shadow architecture, same weather-neutral outdoor mood. Do not include any readable text, labels, captions, numbers, logos, decals, signage, UI, watermarks, license plates, or model badges anywhere in the image. Asset type: accessory. Reference role: accessory module. Title: Bike Rack. Subject: Rear cargo rack concept. Details: Rear rail bike rack system with compact loops and lock-ready geometry..",
+      "style": {
+        "styleKey": "muted-adventure-suite",
+        "palette": "Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights.",
+        "generatedAt": "2026-02-17T04:07:24.371591+00:00",
+        "modelHint": "dall-e-3",
+        "seedHint": "adventure-v1",
+        "useCase": "stylized-concept",
+        "sourceUrl": "https://images.pexels.com/photos/4061622/pexels-photo-4061622.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+        "license": "pexels",
+        "attributionRequired": false,
+        "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+      },
+      "sourceUrl": "https://images.pexels.com/photos/4061622/pexels-photo-4061622.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "license": "pexels",
+      "attributionRequired": false,
+      "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+    },
+    {
+      "assetId": "option-ski-rack",
+      "assetType": "accessory",
+      "path": "public/assets/accessories/ski-rack.png",
+      "prompt": "A cinematic stylized realism and hyper-real CGI image in a consistent visual family called \"muted-adventure-suite\": clean architectural concept-art composition, matte painting look, cinematic color grading, coherent outdoor palette, polished materials, coherent product-shape language. Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights. Keep the same camera feel across all renders with natural three-quarter hero angle, soft horizon bloom, consistent light direction and balanced contrast. Use one shared style system for all assets: same 45mm lens perspective, same depth feel, same environmental haze, same paint material response, same edge lighting, same shadow architecture, same weather-neutral outdoor mood. Do not include any readable text, labels, captions, numbers, logos, decals, signage, UI, watermarks, license plates, or model badges anywhere in the image. Asset type: accessory. Reference role: accessory module. Title: Ski Rack. Subject: Roof-forward snow rack concept. Details: Protective ski platform with reinforced tie-down structure and clean aerodynamic roofline placement..",
+      "style": {
+        "styleKey": "muted-adventure-suite",
+        "palette": "Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights.",
+        "generatedAt": "2026-02-17T04:07:40.234872+00:00",
+        "modelHint": "dall-e-3",
+        "seedHint": "adventure-v1",
+        "useCase": "stylized-concept",
+        "sourceUrl": "https://images.pexels.com/photos/7300959/pexels-photo-7300959.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+        "license": "pexels",
+        "attributionRequired": false,
+        "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+      },
+      "sourceUrl": "https://images.pexels.com/photos/7300959/pexels-photo-7300959.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "license": "pexels",
+      "attributionRequired": false,
+      "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+    },
+    {
+      "assetId": "option-gear-locker",
+      "assetType": "accessory",
+      "path": "public/assets/accessories/gear-locker.png",
+      "prompt": "A cinematic stylized realism and hyper-real CGI image in a consistent visual family called \"muted-adventure-suite\": clean architectural concept-art composition, matte painting look, cinematic color grading, coherent outdoor palette, polished materials, coherent product-shape language. Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights. Keep the same camera feel across all renders with natural three-quarter hero angle, soft horizon bloom, consistent light direction and balanced contrast. Use one shared style system for all assets: same 45mm lens perspective, same depth feel, same environmental haze, same paint material response, same edge lighting, same shadow architecture, same weather-neutral outdoor mood. Do not include any readable text, labels, captions, numbers, logos, decals, signage, UI, watermarks, license plates, or model badges anywhere in the image. Asset type: accessory. Reference role: accessory module. Title: Gear Locker. Subject: Secure storage add-on concept. Details: Under-seat lockable compartment visualized as a clean, durable matte utility shell..",
+      "style": {
+        "styleKey": "muted-adventure-suite",
+        "palette": "Palette: muted earth, forest greens, matte graphite, silver-gray accent metal, warm dune beige, soft amber dusk and restrained peach highlights.",
+        "generatedAt": "2026-02-17T04:07:55.723011+00:00",
+        "modelHint": "dall-e-3",
+        "seedHint": "adventure-v1",
+        "useCase": "stylized-concept",
+        "sourceUrl": "https://images.pexels.com/photos/30255828/pexels-photo-30255828.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+        "license": "pexels",
+        "attributionRequired": false,
+        "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+      },
+      "sourceUrl": "https://images.pexels.com/photos/30255828/pexels-photo-30255828.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "license": "pexels",
+      "attributionRequired": false,
+      "sourceNote": "Stock-first source. Quick visual pass found no visible logos."
+    }
+  ]
+}

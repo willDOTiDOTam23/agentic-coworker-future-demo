@@ -6,20 +6,18 @@ ISSUE_ID="${1:-}"
 
 if [[ -z "$ISSUE_ID" ]]; then
   echo "No issueId passed. Auto-selecting first open issue..."
-  ISSUE_ID="$(curl -s "$BASE_URL/api/ops/issues" | node -e "const fs = require('fs'); const input = fs.readFileSync(0, 'utf8').trim(); if (!input) { process.exit(1); } try { const items = JSON.parse(input); const open = Array.isArray(items) ? items.find((issue) => !issue.fixed) : null; if (open?.id) { console.log(open.id); process.exit(0); } process.exit(1); } catch { process.exit(1); }")"
-  if [[ -z "$ISSUE_ID" ]]; then
-    echo "No open issues found. Seeding board first by re-running Part 2 for a blocked session may help."
-    exit 1
-  fi
-  echo "Using issue: $ISSUE_ID"
+  ISSUE_ID="$(curl -s "$BASE_URL/api/ops/issues" | node -e "const fs=require('fs'); const input=fs.readFileSync(0,'utf8').trim(); const items=JSON.parse(input||'[]'); const open=items.find((issue)=>!issue.fixed); if(open?.id){process.stdout.write(open.id);} else {process.exit(1);} ")"
 fi
 
-echo "=== Part 3: apply issue fix ==="
-curl -s -X POST "$BASE_URL/api/mcp/tools/dev.fixIssue/call" \
-  -H 'Content-Type: application/json' \
-  -d "{\"issueId\":\"$ISSUE_ID\"}"
-echo
+echo "=== Customize (Part 3): apply live fix ==="
+FIX_RESULT="$(curl -s -X POST "$BASE_URL/api/mcp/tools/dev.fixIssue/call" -H 'Content-Type: application/json' -d "{\"issueId\":\"$ISSUE_ID\"}")"
+echo "$FIX_RESULT"
 
-echo "=== Part 3: rerun board after fix ==="
+SESSION_ID="$(node -e "const body=JSON.parse(process.argv[1]);process.stdout.write(body?.data?.session?.id ?? '')" "$FIX_RESULT")"
+
+echo
+echo "=== Customize verification: board after fix ==="
 curl -s "$BASE_URL/api/ops/board"
 echo
+
+echo "DEMO_CONTEXT:{\"issueId\":\"$ISSUE_ID\",\"sessionId\":\"$SESSION_ID\"}"

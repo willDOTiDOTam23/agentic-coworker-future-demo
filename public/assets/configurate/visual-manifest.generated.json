@@ -1,0 +1,1030 @@
+{
+  "generatedAt": "2026-03-08T20:17:38.304566+00:00",
+  "sourceDropFolder": "public/assets/source-drop/configurate",
+  "rightsFile": "public/assets/source-drop/configurate/rights.json",
+  "excludedAssets": [],
+  "assets": [
+    {
+      "assetId": "source-rf-hero-landscape-jpg-97d923281c",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-rf-hero-landscape-jpg-97d923281c/hero.webp",
+      "taxonomy": {
+        "subjectType": "van_exterior",
+        "sceneType": "hero",
+        "accessoryType": "unknown",
+        "angle": "front_three_quarter",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "warm_sand",
+        "styleTone": "unknown",
+        "qualityScore": 86
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-rf-hero-landscape-jpg-97d923281c/source.webp",
+        "hero": "/assets/configurate/normalized/source-rf-hero-landscape-jpg-97d923281c/hero.webp",
+        "card": "/assets/configurate/normalized/source-rf-hero-landscape-jpg-97d923281c/card.webp",
+        "thumb": "/assets/configurate/normalized/source-rf-hero-landscape-jpg-97d923281c/thumb.webp"
+      },
+      "sourceFile": "RF+Hero+Landscape.jpg.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 2500,
+        "height": 1667
+      }
+    },
+    {
+      "assetId": "source-dsc6747-scaled-edc8194716",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-dsc6747-scaled-edc8194716/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "graphite",
+        "styleTone": "unknown",
+        "qualityScore": 85
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-dsc6747-scaled-edc8194716/source.webp",
+        "hero": "/assets/configurate/normalized/source-dsc6747-scaled-edc8194716/hero.webp",
+        "card": "/assets/configurate/normalized/source-dsc6747-scaled-edc8194716/card.webp",
+        "thumb": "/assets/configurate/normalized/source-dsc6747-scaled-edc8194716/thumb.webp"
+      },
+      "sourceFile": "DSC6747-scaled.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 2560,
+        "height": 1708
+      }
+    },
+    {
+      "assetId": "source-mueller-web-9-2-jpg-11e9d31f93",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-mueller-web-9-2-jpg-11e9d31f93/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "warm_sand",
+        "styleTone": "unknown",
+        "qualityScore": 84
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-mueller-web-9-2-jpg-11e9d31f93/source.webp",
+        "hero": "/assets/configurate/normalized/source-mueller-web-9-2-jpg-11e9d31f93/hero.webp",
+        "card": "/assets/configurate/normalized/source-mueller-web-9-2-jpg-11e9d31f93/card.webp",
+        "thumb": "/assets/configurate/normalized/source-mueller-web-9-2-jpg-11e9d31f93/thumb.webp"
+      },
+      "sourceFile": "mueller+web-9+2.JPG.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 2048,
+        "height": 1536
+      }
+    },
+    {
+      "assetId": "source-sp0314b-sprinter-murphy-bed-deployed-interior-d3167c1f87",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-sp0314b-sprinter-murphy-bed-deployed-interior-d3167c1f87/hero.webp",
+      "taxonomy": {
+        "subjectType": "van_interior",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "interior_wide",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 84
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-sp0314b-sprinter-murphy-bed-deployed-interior-d3167c1f87/source.webp",
+        "hero": "/assets/configurate/normalized/source-sp0314b-sprinter-murphy-bed-deployed-interior-d3167c1f87/hero.webp",
+        "card": "/assets/configurate/normalized/source-sp0314b-sprinter-murphy-bed-deployed-interior-d3167c1f87/card.webp",
+        "thumb": "/assets/configurate/normalized/source-sp0314b-sprinter-murphy-bed-deployed-interior-d3167c1f87/thumb.webp"
+      },
+      "sourceFile": "SP0314B-sprinter-murphy-bed-deployed-interior.jpg",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 2000,
+        "height": 1500
+      }
+    },
+    {
+      "assetId": "source-dsc-0006cropped1200-1200-aefa2baee1",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-dsc-0006cropped1200-1200-aefa2baee1/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 83
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-dsc-0006cropped1200-1200-aefa2baee1/source.webp",
+        "hero": "/assets/configurate/normalized/source-dsc-0006cropped1200-1200-aefa2baee1/hero.webp",
+        "card": "/assets/configurate/normalized/source-dsc-0006cropped1200-1200-aefa2baee1/card.webp",
+        "thumb": "/assets/configurate/normalized/source-dsc-0006cropped1200-1200-aefa2baee1/thumb.webp"
+      },
+      "sourceFile": "DSC_0006cropped1200-1200.jpg",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 1200,
+        "height": 1200
+      }
+    },
+    {
+      "assetId": "source-tcv-mercedes-bennett-128-220112-05768-hdr-d6a683c050",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-tcv-mercedes-bennett-128-220112-05768-hdr-d6a683c050/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "warm_sand",
+        "styleTone": "unknown",
+        "qualityScore": 83
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-tcv-mercedes-bennett-128-220112-05768-hdr-d6a683c050/source.webp",
+        "hero": "/assets/configurate/normalized/source-tcv-mercedes-bennett-128-220112-05768-hdr-d6a683c050/hero.webp",
+        "card": "/assets/configurate/normalized/source-tcv-mercedes-bennett-128-220112-05768-hdr-d6a683c050/card.webp",
+        "thumb": "/assets/configurate/normalized/source-tcv-mercedes-bennett-128-220112-05768-hdr-d6a683c050/thumb.webp"
+      },
+      "sourceFile": "tcv-mercedes-bennett-128-220112-05768-HDR.jpg",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 7921,
+        "height": 5283
+      }
+    },
+    {
+      "assetId": "source-sp1115b-sprinter-murphy-bed-up-jpg-f8703903c8",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-sp1115b-sprinter-murphy-bed-up-jpg-f8703903c8/hero.webp",
+      "taxonomy": {
+        "subjectType": "van_interior",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "warm_sand",
+        "styleTone": "unknown",
+        "qualityScore": 82
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-sp1115b-sprinter-murphy-bed-up-jpg-f8703903c8/source.webp",
+        "hero": "/assets/configurate/normalized/source-sp1115b-sprinter-murphy-bed-up-jpg-f8703903c8/hero.webp",
+        "card": "/assets/configurate/normalized/source-sp1115b-sprinter-murphy-bed-up-jpg-f8703903c8/card.webp",
+        "thumb": "/assets/configurate/normalized/source-sp1115b-sprinter-murphy-bed-up-jpg-f8703903c8/thumb.webp"
+      },
+      "sourceFile": "SP1115B-sprinter-murphy-bed-up.jpg.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 2000,
+        "height": 1500
+      }
+    },
+    {
+      "assetId": "source-pxl-20211206-203101766-jpg-3b480bf40c",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-pxl-20211206-203101766-jpg-3b480bf40c/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 81
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-pxl-20211206-203101766-jpg-3b480bf40c/source.webp",
+        "hero": "/assets/configurate/normalized/source-pxl-20211206-203101766-jpg-3b480bf40c/hero.webp",
+        "card": "/assets/configurate/normalized/source-pxl-20211206-203101766-jpg-3b480bf40c/card.webp",
+        "thumb": "/assets/configurate/normalized/source-pxl-20211206-203101766-jpg-3b480bf40c/thumb.webp"
+      },
+      "sourceFile": "PXL_20211206_203101766.jpg.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 2500,
+        "height": 1875
+      }
+    },
+    {
+      "assetId": "source-sp1115b-sprinter-murphy-bed-with-mattress-jpg-0d6b7e2dab",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-sp1115b-sprinter-murphy-bed-with-mattress-jpg-0d6b7e2dab/hero.webp",
+      "taxonomy": {
+        "subjectType": "van_interior",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "warm_sand",
+        "styleTone": "unknown",
+        "qualityScore": 81
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-sp1115b-sprinter-murphy-bed-with-mattress-jpg-0d6b7e2dab/source.webp",
+        "hero": "/assets/configurate/normalized/source-sp1115b-sprinter-murphy-bed-with-mattress-jpg-0d6b7e2dab/hero.webp",
+        "card": "/assets/configurate/normalized/source-sp1115b-sprinter-murphy-bed-with-mattress-jpg-0d6b7e2dab/card.webp",
+        "thumb": "/assets/configurate/normalized/source-sp1115b-sprinter-murphy-bed-with-mattress-jpg-0d6b7e2dab/thumb.webp"
+      },
+      "sourceFile": "SP1115B-sprinter-murphy-bed-with-mattress.jpg.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 2000,
+        "height": 1500
+      }
+    },
+    {
+      "assetId": "source-0-claus-boho-camper-vans-jpg-d68437bd40",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-0-claus-boho-camper-vans-jpg-d68437bd40/hero.webp",
+      "taxonomy": {
+        "subjectType": "van_exterior",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "relaxed",
+        "qualityScore": 80
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-0-claus-boho-camper-vans-jpg-d68437bd40/source.webp",
+        "hero": "/assets/configurate/normalized/source-0-claus-boho-camper-vans-jpg-d68437bd40/hero.webp",
+        "card": "/assets/configurate/normalized/source-0-claus-boho-camper-vans-jpg-d68437bd40/card.webp",
+        "thumb": "/assets/configurate/normalized/source-0-claus-boho-camper-vans-jpg-d68437bd40/thumb.webp"
+      },
+      "sourceFile": "0-Claus-Boho-Camper-Vans.jpg.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 1600,
+        "height": 1200
+      }
+    },
+    {
+      "assetId": "source-image-7-5a9d636800",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-image-7-5a9d636800/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 74
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-image-7-5a9d636800/source.webp",
+        "hero": "/assets/configurate/normalized/source-image-7-5a9d636800/hero.webp",
+        "card": "/assets/configurate/normalized/source-image-7-5a9d636800/card.webp",
+        "thumb": "/assets/configurate/normalized/source-image-7-5a9d636800/thumb.webp"
+      },
+      "sourceFile": "image-7.png",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 1636,
+        "height": 705
+      }
+    },
+    {
+      "assetId": "source-our-experience-with-renogy-solar-panels-v0-d3r2nocu8nhf1-png-05e083ff32",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-our-experience-with-renogy-solar-panels-v0-d3r2nocu8nhf1-png-05e083ff32/hero.webp",
+      "taxonomy": {
+        "subjectType": "accessory_detail",
+        "sceneType": "in_use",
+        "accessoryType": "solar_panels",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 74
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-our-experience-with-renogy-solar-panels-v0-d3r2nocu8nhf1-png-05e083ff32/source.webp",
+        "hero": "/assets/configurate/normalized/source-our-experience-with-renogy-solar-panels-v0-d3r2nocu8nhf1-png-05e083ff32/hero.webp",
+        "card": "/assets/configurate/normalized/source-our-experience-with-renogy-solar-panels-v0-d3r2nocu8nhf1-png-05e083ff32/card.webp",
+        "thumb": "/assets/configurate/normalized/source-our-experience-with-renogy-solar-panels-v0-d3r2nocu8nhf1-png-05e083ff32/thumb.webp"
+      },
+      "sourceFile": "our-experience-with-renogy-solar-panels-v0-d3r2nocu8nhf1.png.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 1080,
+        "height": 1079
+      }
+    },
+    {
+      "assetId": "source-unimog-tenerex-von-hellgeth-761c0bcec2",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-unimog-tenerex-von-hellgeth-761c0bcec2/hero.webp",
+      "taxonomy": {
+        "subjectType": "van_exterior",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "warm_sand",
+        "styleTone": "rugged",
+        "qualityScore": 74
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-unimog-tenerex-von-hellgeth-761c0bcec2/source.webp",
+        "hero": "/assets/configurate/normalized/source-unimog-tenerex-von-hellgeth-761c0bcec2/hero.webp",
+        "card": "/assets/configurate/normalized/source-unimog-tenerex-von-hellgeth-761c0bcec2/card.webp",
+        "thumb": "/assets/configurate/normalized/source-unimog-tenerex-von-hellgeth-761c0bcec2/thumb.webp"
+      },
+      "sourceFile": "unimog-tenerex-von-hellgeth.jpg",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 1280,
+        "height": 720
+      }
+    },
+    {
+      "assetId": "source-campervan-table-ideas-1200x900-de19468050",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-campervan-table-ideas-1200x900-de19468050/hero.webp",
+      "taxonomy": {
+        "subjectType": "van_interior",
+        "sceneType": "unknown",
+        "accessoryType": "storage_module",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 71
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-campervan-table-ideas-1200x900-de19468050/source.webp",
+        "hero": "/assets/configurate/normalized/source-campervan-table-ideas-1200x900-de19468050/hero.webp",
+        "card": "/assets/configurate/normalized/source-campervan-table-ideas-1200x900-de19468050/card.webp",
+        "thumb": "/assets/configurate/normalized/source-campervan-table-ideas-1200x900-de19468050/thumb.webp"
+      },
+      "sourceFile": "campervan-table-ideas-1200x900.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 1200,
+        "height": 900
+      }
+    },
+    {
+      "assetId": "source-bg-u-moghome-8-49b7cfa67b",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-bg-u-moghome-8-49b7cfa67b/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 68
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-bg-u-moghome-8-49b7cfa67b/source.webp",
+        "hero": "/assets/configurate/normalized/source-bg-u-moghome-8-49b7cfa67b/hero.webp",
+        "card": "/assets/configurate/normalized/source-bg-u-moghome-8-49b7cfa67b/card.webp",
+        "thumb": "/assets/configurate/normalized/source-bg-u-moghome-8-49b7cfa67b/thumb.webp"
+      },
+      "sourceFile": "BG_U_MogHome_8.jpg",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 1180,
+        "height": 590
+      }
+    },
+    {
+      "assetId": "source-cs67fr-9-1000-3406f1cbf7",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-cs67fr-9-1000-3406f1cbf7/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "warm_sand",
+        "styleTone": "unknown",
+        "qualityScore": 66
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-cs67fr-9-1000-3406f1cbf7/source.webp",
+        "hero": "/assets/configurate/normalized/source-cs67fr-9-1000-3406f1cbf7/hero.webp",
+        "card": "/assets/configurate/normalized/source-cs67fr-9-1000-3406f1cbf7/card.webp",
+        "thumb": "/assets/configurate/normalized/source-cs67fr-9-1000-3406f1cbf7/thumb.webp"
+      },
+      "sourceFile": "cs67fr_9_1000.jpg",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 930,
+        "height": 1000
+      }
+    },
+    {
+      "assetId": "source-01-95429-1623910384-1024x1024-png-4aa2a837e1",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-01-95429-1623910384-1024x1024-png-4aa2a837e1/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 65
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-01-95429-1623910384-1024x1024-png-4aa2a837e1/source.webp",
+        "hero": "/assets/configurate/normalized/source-01-95429-1623910384-1024x1024-png-4aa2a837e1/hero.webp",
+        "card": "/assets/configurate/normalized/source-01-95429-1623910384-1024x1024-png-4aa2a837e1/card.webp",
+        "thumb": "/assets/configurate/normalized/source-01-95429-1623910384-1024x1024-png-4aa2a837e1/thumb.webp"
+      },
+      "sourceFile": "01__95429.1623910384_1024x1024.png.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 1024,
+        "height": 1024
+      }
+    },
+    {
+      "assetId": "source-vanbuild-jpg-eef5fca446",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-vanbuild-jpg-eef5fca446/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "graphite",
+        "styleTone": "unknown",
+        "qualityScore": 62
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-vanbuild-jpg-eef5fca446/source.webp",
+        "hero": "/assets/configurate/normalized/source-vanbuild-jpg-eef5fca446/hero.webp",
+        "card": "/assets/configurate/normalized/source-vanbuild-jpg-eef5fca446/card.webp",
+        "thumb": "/assets/configurate/normalized/source-vanbuild-jpg-eef5fca446/thumb.webp"
+      },
+      "sourceFile": "VanBuild.jpg.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 927,
+        "height": 619
+      }
+    },
+    {
+      "assetId": "source-beastmode01-jpg-5a26cecb54",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-beastmode01-jpg-5a26cecb54/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "warm_sand",
+        "styleTone": "unknown",
+        "qualityScore": 61
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-beastmode01-jpg-5a26cecb54/source.webp",
+        "hero": "/assets/configurate/normalized/source-beastmode01-jpg-5a26cecb54/hero.webp",
+        "card": "/assets/configurate/normalized/source-beastmode01-jpg-5a26cecb54/card.webp",
+        "thumb": "/assets/configurate/normalized/source-beastmode01-jpg-5a26cecb54/thumb.webp"
+      },
+      "sourceFile": "beastmode01.jpg.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 1000,
+        "height": 562
+      }
+    },
+    {
+      "assetId": "source-csm-hd-u-unimog-bedienkonzept-199cb34f8c-ea8a4797ff",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-csm-hd-u-unimog-bedienkonzept-199cb34f8c-ea8a4797ff/hero.webp",
+      "taxonomy": {
+        "subjectType": "van_exterior",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "graphite",
+        "styleTone": "rugged",
+        "qualityScore": 60
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-csm-hd-u-unimog-bedienkonzept-199cb34f8c-ea8a4797ff/source.webp",
+        "hero": "/assets/configurate/normalized/source-csm-hd-u-unimog-bedienkonzept-199cb34f8c-ea8a4797ff/hero.webp",
+        "card": "/assets/configurate/normalized/source-csm-hd-u-unimog-bedienkonzept-199cb34f8c-ea8a4797ff/card.webp",
+        "thumb": "/assets/configurate/normalized/source-csm-hd-u-unimog-bedienkonzept-199cb34f8c-ea8a4797ff/thumb.webp"
+      },
+      "sourceFile": "csm_HD_U_Unimog-Bedienkonzept_199cb34f8c.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 1440,
+        "height": 610
+      }
+    },
+    {
+      "assetId": "source-125986-3-441c00fdd8",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-125986-3-441c00fdd8/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 54
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-125986-3-441c00fdd8/source.webp",
+        "hero": "/assets/configurate/normalized/source-125986-3-441c00fdd8/hero.webp",
+        "card": "/assets/configurate/normalized/source-125986-3-441c00fdd8/card.webp",
+        "thumb": "/assets/configurate/normalized/source-125986-3-441c00fdd8/thumb.webp"
+      },
+      "sourceFile": "125986_3.jpg",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 800,
+        "height": 800
+      }
+    },
+    {
+      "assetId": "source-un1118b-storage-box-small-hero-jpg-6b259c7378",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-un1118b-storage-box-small-hero-jpg-6b259c7378/hero.webp",
+      "taxonomy": {
+        "subjectType": "accessory_detail",
+        "sceneType": "hero",
+        "accessoryType": "gear_locker",
+        "angle": "front_three_quarter",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 54
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-un1118b-storage-box-small-hero-jpg-6b259c7378/source.webp",
+        "hero": "/assets/configurate/normalized/source-un1118b-storage-box-small-hero-jpg-6b259c7378/hero.webp",
+        "card": "/assets/configurate/normalized/source-un1118b-storage-box-small-hero-jpg-6b259c7378/card.webp",
+        "thumb": "/assets/configurate/normalized/source-un1118b-storage-box-small-hero-jpg-6b259c7378/thumb.webp"
+      },
+      "sourceFile": "UN1118B-storage-box-small-hero.jpg.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 888,
+        "height": 663
+      }
+    },
+    {
+      "assetId": "source-2018-new-sprinter-van-third-generation-interior-cockpit-95c4c48509",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-2018-new-sprinter-van-third-generation-interior-cockpit-95c4c48509/hero.webp",
+      "taxonomy": {
+        "subjectType": "van_interior",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "interior_wide",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 52
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-2018-new-sprinter-van-third-generation-interior-cockpit-95c4c48509/source.webp",
+        "hero": "/assets/configurate/normalized/source-2018-new-sprinter-van-third-generation-interior-cockpit-95c4c48509/hero.webp",
+        "card": "/assets/configurate/normalized/source-2018-new-sprinter-van-third-generation-interior-cockpit-95c4c48509/card.webp",
+        "thumb": "/assets/configurate/normalized/source-2018-new-sprinter-van-third-generation-interior-cockpit-95c4c48509/thumb.webp"
+      },
+      "sourceFile": "2018-new-sprinter-van-third-generation-interior-cockpit.jpg",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 640,
+        "height": 335
+      }
+    },
+    {
+      "assetId": "source-elitext-1-535187762f",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-elitext-1-535187762f/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 46
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-elitext-1-535187762f/source.webp",
+        "hero": "/assets/configurate/normalized/source-elitext-1-535187762f/hero.webp",
+        "card": "/assets/configurate/normalized/source-elitext-1-535187762f/card.webp",
+        "thumb": "/assets/configurate/normalized/source-elitext-1-535187762f/thumb.webp"
+      },
+      "sourceFile": "elitext-1.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 500,
+        "height": 500
+      }
+    },
+    {
+      "assetId": "source-g0946358b-f-2x-4ce2cb84-7406-45e6-b1c1-9a6690f5ec20-grande-png-6db8f3bd20",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-g0946358b-f-2x-4ce2cb84-7406-45e6-b1c1-9a6690f5ec20-grande-png-6db8f3bd20/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "arctic_white",
+        "styleTone": "unknown",
+        "qualityScore": 44
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-g0946358b-f-2x-4ce2cb84-7406-45e6-b1c1-9a6690f5ec20-grande-png-6db8f3bd20/source.webp",
+        "hero": "/assets/configurate/normalized/source-g0946358b-f-2x-4ce2cb84-7406-45e6-b1c1-9a6690f5ec20-grande-png-6db8f3bd20/hero.webp",
+        "card": "/assets/configurate/normalized/source-g0946358b-f-2x-4ce2cb84-7406-45e6-b1c1-9a6690f5ec20-grande-png-6db8f3bd20/card.webp",
+        "thumb": "/assets/configurate/normalized/source-g0946358b-f-2x-4ce2cb84-7406-45e6-b1c1-9a6690f5ec20-grande-png-6db8f3bd20/thumb.webp"
+      },
+      "sourceFile": "g0946358B-F_2x_4ce2cb84-7406-45e6-b1c1-9a6690f5ec20_grande.png.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 600,
+        "height": 600
+      }
+    },
+    {
+      "assetId": "source-2000-g2-01-g2-19109-jpg-8c83c7cbcc",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-2000-g2-01-g2-19109-jpg-8c83c7cbcc/hero.webp",
+      "taxonomy": {
+        "subjectType": "unknown",
+        "sceneType": "unknown",
+        "accessoryType": "unknown",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 42
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-2000-g2-01-g2-19109-jpg-8c83c7cbcc/source.webp",
+        "hero": "/assets/configurate/normalized/source-2000-g2-01-g2-19109-jpg-8c83c7cbcc/hero.webp",
+        "card": "/assets/configurate/normalized/source-2000-g2-01-g2-19109-jpg-8c83c7cbcc/card.webp",
+        "thumb": "/assets/configurate/normalized/source-2000-g2-01-g2-19109-jpg-8c83c7cbcc/thumb.webp"
+      },
+      "sourceFile": "2000-G2_01-G2__19109.jpg.webp",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 500,
+        "height": 500
+      }
+    },
+    {
+      "assetId": "source-thule-motion-b906f3384b",
+      "assetType": "source",
+      "imagePath": "/assets/configurate/normalized/source-thule-motion-b906f3384b/hero.webp",
+      "taxonomy": {
+        "subjectType": "accessory_detail",
+        "sceneType": "unknown",
+        "accessoryType": "roof_rack",
+        "angle": "unknown",
+        "environment": "unknown",
+        "lighting": "daylight",
+        "occupancySignal": "empty_scene",
+        "colorway": "mixed",
+        "styleTone": "unknown",
+        "qualityScore": 35
+      },
+      "rights": {
+        "owner": "Will-provided asset",
+        "usageScope": "demo-local",
+        "attributionRequired": false,
+        "source": "user-provided:/Users/will/Downloads/images"
+      },
+      "derivatives": {
+        "source": "/assets/configurate/normalized/source-thule-motion-b906f3384b/source.webp",
+        "hero": "/assets/configurate/normalized/source-thule-motion-b906f3384b/hero.webp",
+        "card": "/assets/configurate/normalized/source-thule-motion-b906f3384b/card.webp",
+        "thumb": "/assets/configurate/normalized/source-thule-motion-b906f3384b/thumb.webp"
+      },
+      "sourceFile": "thule_motion.jpg",
+      "generatedFromIngestion": true,
+      "sourceUrl": "user-provided:/Users/will/Downloads/images",
+      "attributionRequired": false,
+      "dimensions": {
+        "width": 769,
+        "height": 216
+      }
+    }
+  ],
+  "selections": {
+    "heroTemplateAssetIds": [
+      "source-rf-hero-landscape-jpg-97d923281c",
+      "source-0-claus-boho-camper-vans-jpg-d68437bd40",
+      "source-unimog-tenerex-von-hellgeth-761c0bcec2",
+      "source-csm-hd-u-unimog-bedienkonzept-199cb34f8c-ea8a4797ff"
+    ],
+    "templateAssetByTemplateId": {
+      "template-sable-escape": "source-rf-hero-landscape-jpg-97d923281c",
+      "template-ridge-ramble": "source-0-claus-boho-camper-vans-jpg-d68437bd40",
+      "template-dune-nomad": "source-unimog-tenerex-von-hellgeth-761c0bcec2",
+      "template-lumina-lounger": "source-csm-hd-u-unimog-bedienkonzept-199cb34f8c-ea8a4797ff"
+    },
+    "accessoryAssetByOptionId": {
+      "option-solar-panels": "source-our-experience-with-renogy-solar-panels-v0-d3r2nocu8nhf1-png-05e083ff32"
+    },
+    "fallbackAccessoryImagePath": "/assets/accessories/accessory-default.svg"
+  },
+  "warnings": {
+    "missingRightsEntries": [],
+    "totalScanned": 27,
+    "totalIngested": 27
+  }
+}

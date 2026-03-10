@@ -1,0 +1,96 @@
+{
+  "generatedAt": "2026-02-18T00:00:00.000Z",
+  "sourceType": "stock-manifest",
+  "assets": [
+    {
+      "assetId": "template-sable-escape",
+      "downloadUrl": "https://images.pexels.com/photos/32378665/pexels-photo-32378665.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "licenseSource": "Pexels",
+      "licenseText": "Pexels License — free to use for personal and commercial purposes. Attribution is not required.",
+      "attributionRequired": false,
+      "noLogoChecked": true,
+      "notes": "Stock-first source selected for stock-quality realism. No obvious vehicle logo or brand marks visible in selected crop."
+    },
+    {
+      "assetId": "template-ridge-ramble",
+      "downloadUrl": "https://images.pexels.com/photos/29710911/pexels-photo-29710911.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "licenseSource": "Pexels",
+      "licenseText": "Pexels License — free to use for personal and commercial purposes. Attribution is not required.",
+      "attributionRequired": false,
+      "noLogoChecked": true,
+      "notes": "Stock-first source selected for stock-quality realism. No obvious vehicle logo or brand marks visible in selected crop."
+    },
+    {
+      "assetId": "template-dune-nomad",
+      "downloadUrl": "https://images.pexels.com/photos/13134378/pexels-photo-13134378.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "licenseSource": "Pexels",
+      "licenseText": "Pexels License — free to use for personal and commercial purposes. Attribution is not required.",
+      "attributionRequired": false,
+      "noLogoChecked": true,
+      "notes": "Stock-first source selected for stock-quality realism. No obvious vehicle logo or brand marks visible in selected crop."
+    },
+    {
+      "assetId": "template-lumina-lounger",
+      "downloadUrl": "https://images.pexels.com/photos/5581740/pexels-photo-5581740.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "licenseSource": "Pexels",
+      "licenseText": "Pexels License — free to use for personal and commercial purposes. Attribution is not required.",
+      "attributionRequired": false,
+      "noLogoChecked": true,
+      "notes": "Stock-first source selected for stock-quality realism. No obvious vehicle logo or brand marks visible in selected crop."
+    },
+    {
+      "assetId": "option-solar-panels",
+      "downloadUrl": "https://images.pexels.com/photos/356049/pexels-photo-356049.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "licenseSource": "Pexels",
+      "licenseText": "Pexels License — free to use for personal and commercial purposes. Attribution is not required.",
+      "attributionRequired": false,
+      "noLogoChecked": true,
+      "notes": "Stock-first source selected for stock-quality realism. No obvious vehicle logo or brand marks visible in selected crop."
+    },
+    {
+      "assetId": "option-shower-module",
+      "downloadUrl": "https://images.pexels.com/photos/29987674/pexels-photo-29987674.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "licenseSource": "Pexels",
+      "licenseText": "Pexels License — free to use for personal and commercial purposes. Attribution is not required.",
+      "attributionRequired": false,
+      "noLogoChecked": true,
+      "notes": "Stock-first source selected for stock-quality realism. No obvious vehicle logo or brand marks visible in selected crop."
+    },
+    {
+      "assetId": "option-portable-fridge",
+      "downloadUrl": "https://images.pexels.com/photos/14841578/pexels-photo-14841578.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "licenseSource": "Pexels",
+      "licenseText": "Pexels License — free to use for personal and commercial purposes. Attribution is not required.",
+      "attributionRequired": false,
+      "noLogoChecked": true,
+      "notes": "Stock-first source selected for stock-quality realism. No obvious vehicle logo or brand marks visible in selected crop."
+    },
+    {
+      "assetId": "option-bike-rack",
+      "downloadUrl": "https://images.pexels.com/photos/4061622/pexels-photo-4061622.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "licenseSource": "Pexels",
+      "licenseText": "Pexels License — free to use for personal and commercial purposes. Attribution is not required.",
+      "attributionRequired": false,
+      "noLogoChecked": true,
+      "notes": "Stock-first source selected for stock-quality realism. No obvious vehicle logo or brand marks visible in selected crop."
+    },
+    {
+      "assetId": "option-ski-rack",
+      "downloadUrl": "https://images.pexels.com/photos/7300959/pexels-photo-7300959.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "licenseSource": "Pexels",
+      "licenseText": "Pexels License — free to use for personal and commercial purposes. Attribution is not required.",
+      "attributionRequired": false,
+      "noLogoChecked": true,
+      "notes": "Stock-first source selected for stock-quality realism. No obvious vehicle logo or brand marks visible in selected crop."
+    },
+    {
+      "assetId": "option-gear-locker",
+      "downloadUrl": "https://images.pexels.com/photos/30255828/pexels-photo-30255828.jpeg?auto=compress&cs=tinysrgb&h=1000&w=1600",
+      "licenseSource": "Pexels",
+      "licenseText": "Pexels License — free to use for personal and commercial purposes. Attribution is not required.",
+      "attributionRequired": false,
+      "noLogoChecked": true,
+      "notes": "Stock-first source selected for stock-quality realism. No obvious vehicle logo or brand marks visible in selected crop."
+    }
+  ]
+}
