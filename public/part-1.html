@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Configurate</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="screen-root">
+    <main class="screen-shell">
+      <section class="hero">
+        <div class="hero-top">
+          <h1>Configurate</h1>
+          <p>
+            Customer config momentum: pick a starter concept, style your build, and ship a complete adventure van in 5 polished steps.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button class="secondary" id="fullscreenToggle" aria-label="Toggle full-screen preview">
+            ⛶ Fullscreen
+          </button>
+        </div>
+      </section>
+
+      <section class="card step-head">
+        <div>
+          <strong>Flow</strong>
+          <p id="stepPrompt">Ready to begin.</p>
+        </div>
+        <div class="stepper" id="stepper" aria-label="Journey steps"></div>
+      </section>
+
+      <section class="card">
+        <div class="progress-track">
+          <progress id="progress" max="5" value="1"></progress>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Inspiration cards</h3>
+        <div class="template-track" id="templateTrack" aria-label="Template carousel"></div>
+      </section>
+
+      <section class="card">
+        <h3 id="sectionTitle">Welcome</h3>
+        <p id="sectionPrompt" class="step-prompt"></p>
+        <div id="sectionBody" class="controls"></div>
+      </section>
+
+      <section class="card">
+        <h3>Build summary</h3>
+        <div id="summaryGrid" class="summary-grid"></div>
+      </section>
+
+      <section class="card">
+        <h3>Journey log</h3>
+        <pre id="activityLog" class="log">No events yet.</pre>
+      </section>
+    </main>
+
+    <script>
+      const API = {
+        templates: "/api/van/templates",
+        catalog: "/api/catalog",
+        mcpCall: "/api/mcp/tools",
+        submit: (sessionId) => `/api/sessions/${sessionId}/submit`
+      };
+
+      const ui = {
+        fullscreenToggle: document.getElementById("fullscreenToggle"),
+        stepPrompt: document.getElementById("stepPrompt"),
+        stepper: document.getElementById("stepper"),
+        progress: document.getElementById("progress"),
+        templateTrack: document.getElementById("templateTrack"),
+        sectionTitle: document.getElementById("sectionTitle"),
+        sectionPrompt: document.getElementById("sectionPrompt"),
+        sectionBody: document.getElementById("sectionBody"),
+        summaryGrid: document.getElementById("summaryGrid"),
+        log: document.getElementById("activityLog")
+      };
+
+      const state = {
+        templates: [],
+        catalog: null,
+        session: null,
+        selectedTemplateId: null,
+        selectedScratch: false,
+        sessionId: null,
+        recommendation: null
+      };
+
+      const accessoryOptionIds = [
+        "option-solar-panels",
+        "option-shower-module",
+        "option-portable-fridge",
+        "option-bike-rack",
+        "option-ski-rack",
+        "option-gear-locker"
+      ];
+
+      function money(value) {
+        return `$${Number(value ?? 0).toLocaleString()}`;
+      }
+
+      function appendLog(line) {
+        const ts = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        ui.log.textContent = `[${ts}] ${line}\n${ui.log.textContent}`;
+      }
+
+      function catalogShapeFallback() {
+        return {
+          exteriorOptions: { paintColors: [], roofRacks: [], wheels: [], lights: [] },
+          interiorOptions: [],
+          lifestyleModes: [],
+          powerOptions: [],
+          options: []
+        };
+      }
+
+      function requiredInputs() {
+        return state.session?.journey?.requiredInputs ?? ["templateId", "startFromScratch"];
+      }
+
+      function setStepIndicator(step) {
+        const safe = Math.max(1, Math.min(5, Number(step ?? 1)));
+        ui.progress.value = safe;
+        ui.stepper.innerHTML = "";
+        for (let index = 1; index <= 5; index += 1) {
+          const token = document.createElement("div");
+          token.className = "dot";
+          token.textContent = index;
+          if (index === safe) token.classList.add("active");
+          if (index < safe) token.classList.add("done");
+          ui.stepper.appendChild(token);
+        }
+      }
+
+      function createTemplateCard(template, isSelected) {
+        const button = document.createElement("button");
+        button.className = `template-card ${isSelected ? "selected" : ""}`;
+        button.type = "button";
+        button.setAttribute("aria-pressed", String(Boolean(isSelected)));
+        button.innerHTML = `
+          <figure>
+            ${template.imagePath
+              ? `<img src="${template.imagePath}" alt="${template.title}" loading="lazy" />`
+              : `<div class="placeholder">✦</div>`}
+          </figure>
+          <strong>${template.title}</strong>
+          <p>${template.description}</p>
+          <small>${template.styleHint || "Adventure template"}</small>
+        `;
+        button.addEventListener("click", () => {
+          state.selectedTemplateId = template.id;
+          state.selectedScratch = false;
+          renderTemplates();
+          appendLog(`Template selected: ${template.title}`);
+        });
+        return button;
+      }
+
+      function renderTemplates() {
+        const selected = state.selectedTemplateId;
+        ui.templateTrack.innerHTML = "";
+
+        state.templates.forEach((template) => {
+          ui.templateTrack.appendChild(createTemplateCard(template, !state.selectedScratch && selected === template.id));
+        });
+
+        const scratch = document.createElement("button");
+        scratch.className = `template-card ${state.selectedScratch ? "selected" : ""}`;
+        scratch.type = "button";
+        scratch.setAttribute("aria-pressed", String(Boolean(state.selectedScratch)));
+        scratch.innerHTML = `
+          <figure><div class="placeholder">✦</div></figure>
+          <strong>Start from scratch</strong>
+          <p>Build your own mix of exterior, interior, power, and modules.</p>
+          <small>Manual path</small>
+        `;
+        scratch.addEventListener("click", () => {
+          state.selectedScratch = true;
+          state.selectedTemplateId = null;
+          renderTemplates();
+          appendLog("Selected scratch build route.");
+        });
+        ui.templateTrack.appendChild(scratch);
+      }
+
+      async function callJson(path, options = {}) {
+        const response = await fetch(path, {
+          headers: { "Content-Type": "application/json", ...options.headers },
+          ...options
+        });
+        const body = await response.json();
+        if (!response.ok) {
+          throw new Error(body.error || "Request failed.");
+        }
+        return body;
+      }
+
+      async function callTool(tool, payload) {
+        const result = await callJson(`${API.mcpCall}/${tool}/call`, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        if (!result.ok) {
+          throw new Error(result.error || "Tool returned an error.");
+        }
+        return result.payload?.data ?? result.data;
+      }
+
+      function selectCatalog() {
+        return state.catalog ?? catalogShapeFallback();
+      }
+
+      function renderSummary() {
+        if (!state.session) {
+          ui.summaryGrid.innerHTML = "<p>No active session.</p>";
+          return;
+        }
+
+        const selectedTemplate = state.templates.find((item) => item.id === state.session.templateId);
+        ui.summaryGrid.innerHTML = `
+          <div class="summary-cell"><small>Session</small><span>${state.session.id}</span></div>
+          <div class="summary-cell"><small>Template</small><span>${selectedTemplate?.title || "scratch build"}</span></div>
+          <div class="summary-cell"><small>Step</small><span>${state.session.journey?.step ?? 1} / 5</span></div>
+          <div class="summary-cell"><small>Total</small><span>${money(state.session.totalPrice || 0)}</span></div>
+          <div class="summary-cell"><small>Status</small><span>${state.session.status}</span></div>
+          <div class="summary-cell"><small>Recommendation</small><span>${state.recommendation?.van?.name || "Pending"}</span></div>
+        `;
+      }
+
+      function renderActionRow(buttons) {
+        const row = document.createElement("div");
+        row.className = "actions";
+        buttons.forEach((button) => row.appendChild(button));
+        return row;
+      }
+
+      async function continueToNext(payload) {
+        if (!state.sessionId) return;
+        await callTool("customer.advanceSession", {
+          sessionId: state.sessionId,
+          ...payload
+        });
+        const next = await callTool("customer.refreshSession", { sessionId: state.sessionId });
+        state.session = next.session;
+        state.recommendation = next.recommendation;
+        renderStep();
+      }
+
+      function makeSelect(options, key, currentValue, label, extractor) {
+        const labelNode = document.createElement("label");
+        labelNode.className = "field";
+        labelNode.innerHTML = `<span>${label}</span>`;
+        const select = document.createElement("select");
+        select.dataset.key = key;
+        options.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = extractor(item);
+          option.textContent = `${item.label}${item.style ? ` (${item.style})` : ""}`;
+          option.selected = extractor(item) === currentValue;
+          select.appendChild(option);
+        });
+        labelNode.appendChild(select);
+        return { labelNode, select };
+      }
+
+      function renderStep() {
+        const catalog = selectCatalog();
+        const currentStep = state.session?.journey?.step ?? 1;
+        const templateSelected = state.session?.templateId || state.selectedScratch;
+
+        setStepIndicator(currentStep);
+        state.sectionTitle.textContent = state.session?.journey?.stepCards?.[0]?.title || `Step ${currentStep}`;
+        state.sectionPrompt.textContent = state.session?.journey?.nextQuestion || "Continue your build.";
+        ui.stepPrompt.textContent = `Current step ${currentStep} / 5`;
+
+        renderSummary();
+        ui.sectionBody.innerHTML = "";
+        ui.sectionBody.className = "controls";
+
+        if (!state.session) {
+          const startTemplate = document.createElement("button");
+          startTemplate.className = "primary";
+          startTemplate.textContent = "Start with selected template";
+          startTemplate.disabled = !templateSelected && !state.selectedScratch;
+          startTemplate.addEventListener("click", startSession);
+
+          const startScratch = document.createElement("button");
+          startScratch.className = "secondary";
+          startScratch.textContent = "Start from scratch";
+          startScratch.addEventListener("click", () => {
+            state.selectedScratch = true;
+            state.selectedTemplateId = null;
+            startSession();
+          });
+
+          ui.sectionBody.appendChild(renderActionRow([startTemplate, startScratch]));
+          return;
+        }
+
+        if (!templateSelected && currentStep === 1) {
+          const pickTemplate = document.createElement("p");
+          pickTemplate.textContent = "Pick a template or choose scratch to unlock the next step.";
+          ui.sectionBody.appendChild(pickTemplate);
+          return;
+        }
+
+        if (currentStep === 1) {
+          const go = document.createElement("button");
+          go.className = "primary";
+          go.textContent = "Continue from template selection";
+          go.addEventListener("click", () => continueToNext({ action: "show_options" }));
+          ui.sectionBody.appendChild(renderActionRow([go]));
+          return;
+        }
+
+        if (currentStep === 2) {
+          const exterior = state.session?.config?.exterior ?? {};
+          const paint = makeSelect(catalog.exteriorOptions?.paintColors ?? [], "paint", exterior.paintColor, "Paint", (item) => item.value || item.id);
+          const rack = makeSelect(catalog.exteriorOptions?.roofRacks ?? [], "rack", exterior.roofRack, "Roof rack", (item) => item.value || item.id);
+          const wheels = makeSelect(catalog.exteriorOptions?.wheels ?? [], "wheels", exterior.wheels, "Wheels / tires", (item) => item.value || item.id);
+          const lights = makeSelect(catalog.exteriorOptions?.lights ?? [], "lights", exterior.lights, "Lighting", (item) => item.value || item.id);
+
+          const next = document.createElement("button");
+          next.className = "primary";
+          next.textContent = "Continue to interior";
+          next.addEventListener("click", async () => {
+            await continueToNext({
+              exterior: {
+                paintColor: paint.select.value,
+                roofRack: rack.select.value,
+                wheels: wheels.select.value,
+                lights: lights.select.value
+              },
+              nextStep: 3
+            });
+          });
+
+          [paint.labelNode, rack.labelNode, wheels.labelNode, lights.labelNode].forEach((node) =>
+            ui.sectionBody.appendChild(node)
+          );
+          ui.sectionBody.appendChild(renderActionRow([next]));
+          return;
+        }
+
+        if (currentStep === 3) {
+          const interior = state.session?.config?.interior ?? {};
+          const interiorSelect = makeSelect(catalog.interiorOptions ?? [], "interior", interior.level, "Interior level", (item) => item.style || item.id);
+          const lifeSelect = makeSelect(catalog.lifestyleModes ?? [], "lifestyle", interior.lifestyleMode, "Lifestyle mode", (item) => item.style || item.id);
+          const next = document.createElement("button");
+          next.className = "primary";
+          next.textContent = "Continue to power";
+          next.addEventListener("click", async () => {
+            await continueToNext({
+              interior: {
+                level: interiorSelect.select.value,
+                lifestyleMode: lifeSelect.select.value
+              },
+              nextStep: 4
+            });
+          });
+          [interiorSelect.labelNode, lifeSelect.labelNode].forEach((node) => ui.sectionBody.appendChild(node));
+          ui.sectionBody.appendChild(renderActionRow([next]));
+          return;
+        }
+
+        if (currentStep === 4) {
+          const power = state.session?.config?.power ?? {};
+          const powerSelect = makeSelect(catalog.powerOptions ?? [], "power", power.drivetrain, "Powertrain", (item) => item.style || item.id);
+          const next = document.createElement("button");
+          next.className = "primary";
+          next.textContent = "Continue to accessories";
+          next.addEventListener("click", async () => {
+            await continueToNext({
+              power: { drivetrain: powerSelect.select.value },
+              nextStep: 5
+            });
+          });
+          ui.sectionBody.appendChild(powerSelect.labelNode);
+          ui.sectionBody.appendChild(renderActionRow([next]));
+          return;
+        }
+
+        if (currentStep === 5) {
+          const optionList = document.createElement("div");
+          optionList.className = "chip-grid";
+          (catalog.options ?? [])
+            .filter((option) => accessoryOptionIds.includes(option.id))
+            .forEach((option) => {
+            const chip = document.createElement("label");
+            chip.className = "chip";
+
+            const isChecked = state.session?.config?.accessories?.selectedAccessoryIds?.includes(option.id) ?? false;
+            const image = document.createElement("img");
+            image.src = option.imagePath || "/assets/accessories/accessory-default.svg";
+            image.width = 28;
+            image.height = 18;
+            image.style.borderRadius = "4px";
+            image.style.objectFit = "cover";
+            image.loading = "lazy";
+            image.alt = option.name;
+
+            chip.innerHTML = `<input type="checkbox" data-option="${option.id}" ${isChecked ? "checked" : ""} />`;
+            chip.prepend(image);
+            const name = document.createElement("span");
+            name.textContent = `${option.name}`;
+            const cost = document.createElement("strong");
+            cost.textContent = money(option.deltaPrice);
+            chip.appendChild(name);
+            chip.appendChild(cost);
+            optionList.appendChild(chip);
+
+            chip.querySelector("input")?.addEventListener("change", async (event) => {
+              const checkbox = event.currentTarget;
+              if (!(checkbox instanceof HTMLInputElement)) return;
+              const optionId = checkbox.dataset.option;
+              if (!optionId) return;
+              await continueToNext({ optionId });
+            });
+            });
+
+          const safer = document.createElement("button");
+          safer.className = "secondary";
+          safer.textContent = "Apply safer baseline";
+          safer.addEventListener("click", () => continueToNext({ action: "safe_baseline" }));
+
+          const submit = document.createElement("button");
+          submit.className = "primary";
+          submit.textContent = "Submit for readiness check";
+          submit.addEventListener("click", submitSession);
+
+          ui.sectionBody.appendChild(optionList);
+          ui.sectionBody.appendChild(renderActionRow([safer, submit]));
+          return;
+        }
+      }
+
+      async function startSession() {
+        const payload = {
+          customerName: "Guest",
+          terrain: "city",
+          region: "CO",
+          tripStyle: "adventure",
+          budgetBand: "balanced",
+          moods: ["adventure"],
+          ...(state.selectedScratch ? { startFromScratch: true } : { templateId: state.selectedTemplateId || state.templates[0]?.id })
+        };
+
+        const data = await callTool("customer.startSession", payload);
+        state.session = data.session;
+        state.recommendation = data.recommendation;
+        state.sessionId = data.session?.id ?? null;
+        appendLog(`Session started: ${state.sessionId}`);
+        renderTemplates();
+        renderStep();
+      }
+
+      async function submitSession() {
+        if (!state.sessionId) return;
+        const result = await callJson(API.submit(state.sessionId), { method: "POST" });
+        if (result.session) {
+          state.session = result.session;
+          appendLog(`Submit status: ${result.status}.`);
+          renderSummary();
+          renderStep();
+        } else {
+          appendLog(`Submit response: ${JSON.stringify(result)}`);
+        }
+      }
+
+      async function bootstrap() {
+        try {
+          const [templates, catalog] = await Promise.all([callJson(API.templates), callJson(API.catalog)]);
+          state.templates = templates;
+          state.catalog = catalog;
+          state.selectedTemplateId = templates[0]?.id ?? null;
+          renderTemplates();
+          renderStep();
+        } catch (error) {
+          appendLog(`Bootstrap failed: ${error instanceof Error ? error.message : "unknown error"}`);
+        }
+      }
+
+      async function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen?.();
+          document.body.classList.add("app-fullscreen");
+          return;
+        }
+        await document.exitFullscreen?.();
+        document.body.classList.remove("app-fullscreen");
+      }
+
+      ui.fullscreenToggle.addEventListener("click", () => {
+        toggleFullscreen().catch(() => {
+          document.body.classList.toggle("app-fullscreen");
+        });
+      });
+
+      bootstrap();
+    </script>
+  </body>
+</html>

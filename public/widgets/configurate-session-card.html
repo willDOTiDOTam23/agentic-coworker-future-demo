@@ -1,0 +1,1080 @@
+<style>
+  :root {
+    color-scheme: light dark;
+    --cfg-bg: linear-gradient(180deg, #f4f7fb 0%, #edf2f7 100%);
+    --cfg-shell: #ffffff;
+    --cfg-border: #dbe4ef;
+    --cfg-text: #0f172a;
+    --cfg-muted: #475569;
+    --cfg-accent: #2563eb;
+    --cfg-accent-soft: #dbeafe;
+    --cfg-chip: #f8fafc;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --cfg-bg: linear-gradient(180deg, #0b1220 0%, #0f172a 100%);
+      --cfg-shell: #111827;
+      --cfg-border: #1f2937;
+      --cfg-text: #e5e7eb;
+      --cfg-muted: #9ca3af;
+      --cfg-accent: #60a5fa;
+      --cfg-accent-soft: #1e3a8a;
+      --cfg-chip: #0f172a;
+    }
+  }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--cfg-bg);
+    color: var(--cfg-text);
+  }
+
+  .cfg-shell {
+    padding: 14px;
+  }
+
+  .cfg-header h2 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .cfg-header p {
+    margin: 4px 0 0 0;
+    color: var(--cfg-muted);
+    font-size: 13px;
+  }
+
+  .cfg-card {
+    margin-top: 10px;
+    background: var(--cfg-shell);
+    border: 1px solid var(--cfg-border);
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  }
+
+  .cfg-step {
+    margin: 0;
+    color: var(--cfg-accent);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .cfg-question {
+    margin: 6px 0 0 0;
+    font-size: 16px;
+    line-height: 1.3;
+  }
+
+  .cfg-meta {
+    margin: 8px 0 0 0;
+    font-size: 12px;
+    color: var(--cfg-muted);
+  }
+
+  .cfg-stage {
+    margin-top: 10px;
+    display: grid;
+    gap: 10px;
+  }
+
+  .cfg-block {
+    background: var(--cfg-chip);
+    border: 1px solid var(--cfg-border);
+    border-radius: 10px;
+    padding: 10px;
+  }
+
+  .cfg-block h4 {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: var(--cfg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .cfg-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .cfg-chip-btn {
+    border: 1px solid var(--cfg-border);
+    background: var(--cfg-shell);
+    color: var(--cfg-text);
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .cfg-chip-btn[aria-pressed="true"] {
+    border-color: var(--cfg-accent);
+    background: var(--cfg-accent-soft);
+    color: var(--cfg-text);
+    font-weight: 600;
+  }
+
+  .cfg-template-grid {
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cfg-template-btn {
+    border: 1px solid var(--cfg-border);
+    border-radius: 10px;
+    background: var(--cfg-shell);
+    color: var(--cfg-text);
+    padding: 8px;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .cfg-template-btn[aria-pressed="true"] {
+    border-color: var(--cfg-accent);
+    background: var(--cfg-accent-soft);
+  }
+
+  .cfg-template-btn img {
+    width: 100%;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+
+  .cfg-template-title {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  .cfg-template-sub {
+    display: block;
+    font-size: 11px;
+    color: var(--cfg-muted);
+  }
+
+  .cfg-actions {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .cfg-primary {
+    border: 1px solid var(--cfg-accent);
+    background: var(--cfg-accent);
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .cfg-secondary {
+    border: 1px solid var(--cfg-border);
+    background: var(--cfg-shell);
+    color: var(--cfg-text);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .cfg-primary[disabled],
+  .cfg-secondary[disabled] {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .cfg-quick {
+    border: 1px solid var(--cfg-border);
+    border-radius: 999px;
+    padding: 6px 10px;
+    font-size: 12px;
+    background: var(--cfg-chip);
+    color: var(--cfg-text);
+    cursor: pointer;
+  }
+
+  .cfg-note {
+    margin: 10px 0 0 0;
+    color: var(--cfg-muted);
+    font-size: 11px;
+  }
+</style>
+
+<section class="cfg-shell" role="region" aria-label="Configurate session view">
+  <header class="cfg-header">
+    <h2>Configurate</h2>
+    <p>Customer config momentum</p>
+  </header>
+
+  <article class="cfg-card" aria-live="polite">
+    <p id="cfg-step" class="cfg-step">Step 1 of 5</p>
+    <h3 id="cfg-question" class="cfg-question">Starting your guided build.</h3>
+    <p id="cfg-meta" class="cfg-meta">Session pending.</p>
+    <div id="cfg-stage" class="cfg-stage"></div>
+    <div id="cfg-actions" class="cfg-actions"></div>
+    <p id="cfg-note" class="cfg-note"></p>
+  </article>
+</section>
+
+<script>
+  (function initConfigurateWidget() {
+    const els = {
+      step: document.getElementById("cfg-step"),
+      question: document.getElementById("cfg-question"),
+      meta: document.getElementById("cfg-meta"),
+      stage: document.getElementById("cfg-stage"),
+      actions: document.getElementById("cfg-actions"),
+      note: document.getElementById("cfg-note")
+    };
+
+    const fallbackCatalog = {
+      vanTemplates: [
+        { id: "template-ridge-ramble", title: "Ridge Ramble", styleHint: "Off-road exploration", imagePath: "/assets/templates/template-ridge-ramble.webp" },
+        { id: "template-dune-nomad", title: "Dune Nomad", styleHint: "Desert + nomad balance", imagePath: "/assets/templates/template-dune-nomad.webp" },
+        { id: "template-lumina-lounger", title: "Lumina Lounger", styleHint: "Comfort-first touring", imagePath: "/assets/templates/template-lumina-lounger.webp" },
+        { id: "template-sable-escape", title: "Sable Escape", styleHint: "Minimal expedition", imagePath: "/assets/templates/template-sable-escape.webp" }
+      ],
+      exteriorOptions: {
+        paintColors: [
+          { value: "paint-warm-sand", label: "Warm Sand" },
+          { value: "paint-matte-graphite", label: "Matte Graphite" },
+          { value: "paint-forest-olive", label: "Forest Olive" },
+          { value: "paint-arctic-white", label: "Arctic White" }
+        ],
+        roofRacks: [
+          { value: "rack-sleek", label: "Sleek Rack" },
+          { value: "rack-touring", label: "Touring Rack" },
+          { value: "rack-rugged", label: "Rugged Rack" }
+        ],
+        wheels: [
+          { value: "wheel-all-terrain", label: "All-Terrain" },
+          { value: "wheel-urban", label: "Urban Touring" },
+          { value: "wheel-slick", label: "Performance Slick" }
+        ],
+        lights: [
+          { value: "light-led", label: "LED Horizon" },
+          { value: "light-auxiliary", label: "Auxiliary Spot" },
+          { value: "light-spotlight", label: "Dual Spot" }
+        ]
+      },
+      interiorOptions: [
+        { style: "basic-empty", label: "Basic Empty" },
+        { style: "minimal-build-out", label: "Minimal Build-Out" },
+        { style: "moderate-build-out", label: "Moderate Build-Out" },
+        { style: "ultra-luxury-build-out", label: "Ultra-Luxury Build-Out" }
+      ],
+      lifestyleModes: [
+        { style: "true-adventure", label: "True Adventure" },
+        { style: "relax", label: "Relax & Retreat" },
+        { style: "work-from-home", label: "Work from Home" },
+        { style: "play-hard", label: "Play Hard" },
+        { style: "nomad", label: "Nomad" },
+        { style: "digital", label: "Digital Explorer" }
+      ],
+      powerOptions: [
+        { style: "internal-combustion", label: "Internal Combustion" },
+        { style: "hybrid", label: "Hybrid" },
+        { style: "all-electric", label: "All-Electric" }
+      ]
+    };
+
+    const layoutPresets = [
+      { id: "gear-garage", label: "Gear Garage", occupancy: 2, tripStyle: "Bike hauler", lifestyleMode: "true-adventure" },
+      { id: "family-lounge", label: "Family Lounge", occupancy: 4, tripStyle: "Family weekends", lifestyleMode: "relax" },
+      { id: "work-pod", label: "Work Pod", occupancy: 2, tripStyle: "Remote work + trails", lifestyleMode: "work-from-home" },
+      { id: "sleep-max", label: "Sleep Max", occupancy: 2, tripStyle: "Long overnight loops", lifestyleMode: "nomad" }
+    ];
+
+    const accessoryOptionIds = [
+      "option-solar-panels",
+      "option-shower-module",
+      "option-portable-fridge",
+      "option-bike-rack",
+      "option-ski-rack",
+      "option-gear-locker",
+      "option-solar-canopy",
+      "option-quiet-shell"
+    ];
+
+    const state = {
+      payload: null,
+      catalog: fallbackCatalog,
+      busy: false,
+      drafts: {},
+      note: "",
+      hydrationAttempts: {}
+    };
+
+    function asObject(value) {
+      return value && typeof value === "object" ? value : {};
+    }
+
+    function asArray(value) {
+      return Array.isArray(value) ? value : [];
+    }
+
+    function readPayload(toolResult, metadataOverride) {
+      const root = asObject(toolResult);
+      const resultObject = Object.keys(asObject(root.result)).length > 0 ? asObject(root.result) : root;
+      const metaCandidates = [metadataOverride, resultObject._meta, root._meta];
+
+      for (let index = 0; index < metaCandidates.length; index += 1) {
+        const meta = asObject(metaCandidates[index]);
+        const widgetPayload = asObject(meta.widgetPayload);
+        if (Object.keys(widgetPayload).length === 0) continue;
+        const data = asObject(widgetPayload.data);
+        if (Object.keys(data).length > 0) {
+          return data;
+        }
+        return widgetPayload;
+      }
+
+      const structured = asObject(resultObject.structuredContent);
+      if (Object.keys(structured).length > 0) {
+        return structured;
+      }
+      const globalsToolOutput = asObject(resultObject.toolOutput);
+      if (Object.keys(globalsToolOutput).length > 0) {
+        return globalsToolOutput;
+      }
+      return resultObject;
+    }
+
+    function session(payload) {
+      const value = asObject(payload.session);
+      if (Object.keys(value).length > 0) {
+        return value;
+      }
+      return {
+        id: typeof payload.sessionId === "string" ? payload.sessionId : "",
+        status: typeof payload.sessionStatus === "string" ? payload.sessionStatus : "draft",
+        config: asObject(payload.config),
+        templateId: payload.templateId,
+        isFromScratch: Boolean(payload.startFromScratch)
+      };
+    }
+
+    function sessionId(payload) {
+      const value = session(payload).id;
+      return typeof value === "string" ? value : "";
+    }
+
+    function sessionStatus(payload) {
+      const value = session(payload).status;
+      if (typeof value === "string" && value) return value;
+      if (typeof payload.sessionStatus === "string" && payload.sessionStatus) return payload.sessionStatus;
+      return "draft";
+    }
+
+    function journey(payload) {
+      const value = asObject(payload.journeyState);
+      if (Object.keys(value).length > 0) {
+        return value;
+      }
+      return {
+        step: Number(payload.step) || 1,
+        nextQuestion: typeof payload.nextQuestion === "string" ? payload.nextQuestion : "",
+        requiredInputs: asArray(payload.requiredInputs),
+        stepCards: asArray(payload.stepCards),
+        quickActions: asArray(payload.quickActions)
+      };
+    }
+
+    function step(payload) {
+      const stepValue = Number(journey(payload).step);
+      return stepValue > 0 ? Math.min(5, stepValue) : 1;
+    }
+
+    function draftKey(payload) {
+      return sessionId(payload) || "pending";
+    }
+
+    function defaultDraft(payload) {
+      const s = session(payload);
+      const config = asObject(s.config);
+      const exterior = asObject(config.exterior);
+      const interior = asObject(config.interior);
+      const power = asObject(config.power);
+      const accessories = asObject(config.accessories);
+      return {
+        templateId: typeof s.templateId === "string" ? s.templateId : "",
+        startFromScratch: Boolean(s.isFromScratch),
+        paintColor: typeof exterior.paintColor === "string" ? exterior.paintColor : "",
+        wheels: typeof exterior.wheels === "string" ? exterior.wheels : "",
+        roofRack: typeof exterior.roofRack === "string" ? exterior.roofRack : "",
+        lights: typeof exterior.lights === "string" ? exterior.lights : "",
+        drivetrain: typeof power.drivetrain === "string" ? power.drivetrain : "",
+        interiorLevel: typeof interior.level === "string" ? interior.level : "",
+        surfaceTone: typeof interior.lifestyleMode === "string" ? interior.lifestyleMode : "",
+        layoutId: "gear-garage",
+        selectedAccessoryIds: asArray(accessories.selectedAccessoryIds).filter(function keepId(item) {
+          return typeof item === "string";
+        })
+      };
+    }
+
+    function getDraft(payload) {
+      const key = draftKey(payload);
+      if (!state.drafts[key]) {
+        state.drafts[key] = defaultDraft(payload);
+      }
+      return state.drafts[key];
+    }
+
+    function setNote(message) {
+      state.note = message || "";
+      els.note.textContent = state.note;
+    }
+
+    function catalogFromPayload(payload) {
+      const uiCatalog = asObject(payload.uiCatalog);
+      if (Object.keys(uiCatalog).length > 0) {
+        return uiCatalog;
+      }
+      const widgetView = asObject(payload.view);
+      const viewCatalog = asObject(widgetView.catalog);
+      if (Object.keys(viewCatalog).length > 0) {
+        return viewCatalog;
+      }
+      return state.catalog || fallbackCatalog;
+    }
+
+    function callTool(name, args) {
+      if (window.openai && typeof window.openai.callTool === "function") {
+        return Promise.resolve(window.openai.callTool(name, args || {})).then(function parseBridgeResult(result) {
+          return readPayload(result, window.openai.toolResponseMetadata);
+        });
+      }
+
+      return fetch("/api/mcp/tools/" + encodeURIComponent(name) + "/call", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(args || {})
+      }).then(function toJson(response) {
+        return response.json().then(function parse(body) {
+          if (!response.ok || !body.ok) {
+            throw new Error((body && body.error) || "Tool call failed.");
+          }
+          return body.data || {};
+        });
+      });
+    }
+
+    function refreshAndRender() {
+      if (!state.payload) return Promise.resolve();
+      const sid = sessionId(state.payload);
+      if (!sid) return Promise.resolve();
+      return callTool("customer.refreshSession", { sessionId: sid }).then(function onRefreshed(data) {
+        state.payload = data;
+        renderPayload();
+      });
+    }
+
+    function runAdvance(patch) {
+      if (!state.payload || state.busy) return;
+      const sid = sessionId(state.payload);
+      if (!sid) return;
+      state.busy = true;
+      setNote("Updating build...");
+      renderPayload();
+      callTool("customer.advanceSession", Object.assign({ sessionId: sid }, patch))
+        .then(function onAdvanced(data) {
+          state.payload = data;
+          return refreshAndRender();
+        })
+        .then(function clearNote() {
+          state.busy = false;
+          setNote("");
+          renderPayload();
+        })
+        .catch(function onError(error) {
+          state.busy = false;
+          setNote(error && error.message ? error.message : "Could not update this step.");
+          renderPayload();
+        });
+    }
+
+    function runSubmit() {
+      if (!state.payload || state.busy) return;
+      const sid = sessionId(state.payload);
+      if (!sid) return;
+      state.busy = true;
+      setNote("Running readiness check...");
+      renderPayload();
+      callTool("customer.submitSession", { sessionId: sid })
+        .then(function onSubmitted(data) {
+          state.payload = data;
+          return refreshAndRender();
+        })
+        .then(function clearNote() {
+          state.busy = false;
+          setNote("");
+          renderPayload();
+        })
+        .catch(function onError(error) {
+          state.busy = false;
+          setNote(error && error.message ? error.message : "Submit failed.");
+          renderPayload();
+        });
+    }
+
+    function ensureSessionHydrated(payload) {
+      const sid = sessionId(payload);
+      if (!sid) return;
+      if (state.hydrationAttempts[sid]) return;
+      const currentSession = session(payload);
+      const hasConfig = Object.keys(asObject(currentSession.config)).length > 0;
+      if (hasConfig) return;
+      state.hydrationAttempts[sid] = true;
+      callTool("customer.refreshSession", { sessionId: sid })
+        .then(function hydrated(data) {
+          state.payload = data;
+          renderPayload();
+        })
+        .catch(function hydrationError() {
+          setNote("Session synced. Continue from the card controls.");
+        });
+    }
+
+    function button(label, className, onClick, disabled, pressed) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = className;
+      btn.textContent = label;
+      if (pressed !== undefined) {
+        btn.setAttribute("aria-pressed", String(Boolean(pressed)));
+      }
+      btn.disabled = Boolean(disabled);
+      btn.addEventListener("click", onClick);
+      return btn;
+    }
+
+    function renderTemplateStep(payload, catalog, draft) {
+      const templates = asArray(catalog.vanTemplates).slice(0, 4);
+      const block = document.createElement("div");
+      block.className = "cfg-block";
+      const title = document.createElement("h4");
+      title.textContent = "Pick a template";
+      block.appendChild(title);
+
+      const grid = document.createElement("div");
+      grid.className = "cfg-template-grid";
+      templates.forEach(function eachTemplate(templateItem) {
+        const template = asObject(templateItem);
+        const id = typeof template.id === "string" ? template.id : "";
+        const active = !draft.startFromScratch && draft.templateId === id;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "cfg-template-btn";
+        btn.setAttribute("aria-pressed", String(active));
+        if (typeof template.imagePath === "string" && template.imagePath) {
+          const img = document.createElement("img");
+          img.src = template.imagePath;
+          img.alt = typeof template.title === "string" ? template.title : "Template";
+          btn.appendChild(img);
+        }
+        const name = document.createElement("span");
+        name.className = "cfg-template-title";
+        name.textContent = typeof template.title === "string" ? template.title : "Template";
+        btn.appendChild(name);
+        const sub = document.createElement("span");
+        sub.className = "cfg-template-sub";
+        sub.textContent = typeof template.styleHint === "string" ? template.styleHint : "Starter concept";
+        btn.appendChild(sub);
+        btn.addEventListener("click", function selectTemplate() {
+          draft.templateId = id;
+          draft.startFromScratch = false;
+          renderPayload();
+        });
+        grid.appendChild(btn);
+      });
+      block.appendChild(grid);
+
+      const actionRow = document.createElement("div");
+      actionRow.className = "cfg-row";
+      actionRow.style.marginTop = "8px";
+      actionRow.appendChild(
+        button(
+          "Start from scratch",
+          "cfg-secondary",
+          function chooseScratch() {
+            draft.startFromScratch = true;
+            draft.templateId = "";
+            renderPayload();
+          },
+          state.busy,
+          draft.startFromScratch
+        )
+      );
+      actionRow.appendChild(
+        button(
+          state.busy ? "Applying..." : "Lock template and continue",
+          "cfg-primary",
+          function submitTemplate() {
+            if (draft.startFromScratch) {
+              runAdvance({ startFromScratch: true, nextStep: 2 });
+              return;
+            }
+            if (!draft.templateId) return;
+            runAdvance({ templateId: draft.templateId, nextStep: 2 });
+          },
+          state.busy || (!draft.startFromScratch && !draft.templateId)
+        )
+      );
+      block.appendChild(actionRow);
+      els.stage.appendChild(block);
+    }
+
+    function renderExteriorStep(payload, catalog, draft) {
+      const exterior = asObject(catalog.exteriorOptions);
+      const paintColors = asArray(exterior.paintColors).slice(0, 5);
+      const roofRackOptions = asArray(exterior.roofRacks).slice(0, 4);
+      const wheelOptions = asArray(exterior.wheels).slice(0, 4);
+      const lightOptions = asArray(exterior.lights).slice(0, 4);
+      const powerOptions = asArray(catalog.powerOptions).slice(0, 3);
+
+      const block = document.createElement("div");
+      block.className = "cfg-block";
+      const title = document.createElement("h4");
+      title.textContent = "Exterior + drivetrain";
+      block.appendChild(title);
+
+      const paintRow = document.createElement("div");
+      paintRow.className = "cfg-row";
+      paintColors.forEach(function eachPaint(item) {
+        const entry = asObject(item);
+        const value = typeof entry.value === "string" ? entry.value : "";
+        const label = typeof entry.label === "string" ? entry.label : "Paint";
+        paintRow.appendChild(
+          button(
+            label,
+            "cfg-chip-btn",
+            function pickPaint() {
+              draft.paintColor = value;
+              renderPayload();
+            },
+            state.busy,
+            draft.paintColor === value
+          )
+        );
+      });
+      block.appendChild(paintRow);
+
+      const rackRow = document.createElement("div");
+      rackRow.className = "cfg-row";
+      rackRow.style.marginTop = "8px";
+      roofRackOptions.forEach(function eachRack(item) {
+        const entry = asObject(item);
+        const value = typeof entry.value === "string" ? entry.value : "";
+        const label = typeof entry.label === "string" ? entry.label : "Roof Rack";
+        rackRow.appendChild(
+          button(
+            label,
+            "cfg-chip-btn",
+            function pickRack() {
+              draft.roofRack = value;
+              renderPayload();
+            },
+            state.busy,
+            draft.roofRack === value
+          )
+        );
+      });
+      block.appendChild(rackRow);
+
+      const wheelRow = document.createElement("div");
+      wheelRow.className = "cfg-row";
+      wheelRow.style.marginTop = "8px";
+      wheelOptions.forEach(function eachWheel(item) {
+        const entry = asObject(item);
+        const value = typeof entry.value === "string" ? entry.value : "";
+        const label = typeof entry.label === "string" ? entry.label : "Wheels";
+        wheelRow.appendChild(
+          button(
+            label,
+            "cfg-chip-btn",
+            function pickWheels() {
+              draft.wheels = value;
+              renderPayload();
+            },
+            state.busy,
+            draft.wheels === value
+          )
+        );
+      });
+      block.appendChild(wheelRow);
+
+      const lightRow = document.createElement("div");
+      lightRow.className = "cfg-row";
+      lightRow.style.marginTop = "8px";
+      lightOptions.forEach(function eachLight(item) {
+        const entry = asObject(item);
+        const value = typeof entry.value === "string" ? entry.value : "";
+        const label = typeof entry.label === "string" ? entry.label : "Lights";
+        lightRow.appendChild(
+          button(
+            label,
+            "cfg-chip-btn",
+            function pickLights() {
+              draft.lights = value;
+              renderPayload();
+            },
+            state.busy,
+            draft.lights === value
+          )
+        );
+      });
+      block.appendChild(lightRow);
+
+      const powerRow = document.createElement("div");
+      powerRow.className = "cfg-row";
+      powerRow.style.marginTop = "8px";
+      powerOptions.forEach(function eachPower(item) {
+        const entry = asObject(item);
+        const value = typeof entry.style === "string" ? entry.style : "";
+        const label = typeof entry.label === "string" ? entry.label : "Power";
+        powerRow.appendChild(
+          button(
+            label,
+            "cfg-chip-btn",
+            function pickPower() {
+              draft.drivetrain = value;
+              renderPayload();
+            },
+            state.busy,
+            draft.drivetrain === value
+          )
+        );
+      });
+      block.appendChild(powerRow);
+
+      const actionRow = document.createElement("div");
+      actionRow.className = "cfg-row";
+      actionRow.style.marginTop = "8px";
+      actionRow.appendChild(
+        button(
+          state.busy ? "Applying..." : "Apply exterior and continue",
+          "cfg-primary",
+          function submitExterior() {
+            runAdvance({
+              exterior: {
+                paintColor: draft.paintColor,
+                wheels: draft.wheels,
+                roofRack: draft.roofRack,
+                lights: draft.lights
+              },
+              power: {
+                drivetrain: draft.drivetrain
+              },
+              nextStep: 3
+            });
+          },
+          state.busy || !draft.paintColor || !draft.roofRack || !draft.wheels || !draft.lights || !draft.drivetrain
+        )
+      );
+      block.appendChild(actionRow);
+      els.stage.appendChild(block);
+    }
+
+    function renderInteriorFinishStep(payload, catalog, draft) {
+      const interiorOptions = asArray(catalog.interiorOptions).slice(0, 4);
+      const surfaceOptions = asArray(catalog.lifestyleModes).slice(0, 6);
+
+      const block = document.createElement("div");
+      block.className = "cfg-block";
+      const title = document.createElement("h4");
+      title.textContent = "Interior finish";
+      block.appendChild(title);
+
+      const trimRow = document.createElement("div");
+      trimRow.className = "cfg-row";
+      interiorOptions.forEach(function eachInterior(item) {
+        const entry = asObject(item);
+        const value = typeof entry.style === "string" ? entry.style : "";
+        const label = typeof entry.label === "string" ? entry.label : "Trim";
+        trimRow.appendChild(
+          button(
+            label,
+            "cfg-chip-btn",
+            function pickTrim() {
+              draft.interiorLevel = value;
+              renderPayload();
+            },
+            state.busy,
+            draft.interiorLevel === value
+          )
+        );
+      });
+      block.appendChild(trimRow);
+
+      const surfaceRow = document.createElement("div");
+      surfaceRow.className = "cfg-row";
+      surfaceRow.style.marginTop = "8px";
+      surfaceOptions.forEach(function eachSurface(item) {
+        const entry = asObject(item);
+        const value = typeof entry.style === "string" ? entry.style : "";
+        const label = typeof entry.label === "string" ? entry.label : value;
+        surfaceRow.appendChild(
+          button(
+            label,
+            "cfg-chip-btn",
+            function pickSurface() {
+              draft.surfaceTone = value;
+              renderPayload();
+            },
+            state.busy,
+            draft.surfaceTone === value
+          )
+        );
+      });
+      block.appendChild(surfaceRow);
+
+      const actionRow = document.createElement("div");
+      actionRow.className = "cfg-row";
+      actionRow.style.marginTop = "8px";
+      actionRow.appendChild(
+        button(
+          state.busy ? "Applying..." : "Apply interior finish",
+          "cfg-primary",
+          function submitInterior() {
+            runAdvance({
+              interior: {
+                level: draft.interiorLevel,
+                lifestyleMode: draft.surfaceTone
+              },
+              lifestyleMode: draft.surfaceTone,
+              nextStep: 4
+            });
+          },
+          state.busy || !draft.interiorLevel || !draft.surfaceTone
+        )
+      );
+      block.appendChild(actionRow);
+      els.stage.appendChild(block);
+    }
+
+    function renderLayoutStep(payload, draft) {
+      const block = document.createElement("div");
+      block.className = "cfg-block";
+      const title = document.createElement("h4");
+      title.textContent = "Cabin layout";
+      block.appendChild(title);
+
+      const row = document.createElement("div");
+      row.className = "cfg-row";
+      layoutPresets.forEach(function eachPreset(preset) {
+        row.appendChild(
+          button(
+            preset.label,
+            "cfg-chip-btn",
+            function pickPreset() {
+              draft.layoutId = preset.id;
+              renderPayload();
+            },
+            state.busy,
+            draft.layoutId === preset.id
+          )
+        );
+      });
+      block.appendChild(row);
+
+      const selected = layoutPresets.find(function findPreset(preset) {
+        return preset.id === draft.layoutId;
+      }) || layoutPresets[0];
+
+      const actionRow = document.createElement("div");
+      actionRow.className = "cfg-row";
+      actionRow.style.marginTop = "8px";
+      actionRow.appendChild(
+        button(
+          state.busy ? "Applying..." : "Lock layout and continue",
+          "cfg-primary",
+          function submitLayout() {
+            runAdvance({
+              occupancy: selected.occupancy,
+              tripStyle: selected.tripStyle,
+              lifestyleMode: selected.lifestyleMode,
+              interior: {
+                lifestyleMode: selected.lifestyleMode
+              },
+              nextStep: 5
+            });
+          },
+          state.busy
+        )
+      );
+      block.appendChild(actionRow);
+      els.stage.appendChild(block);
+    }
+
+    function renderAccessoriesStep(payload, catalog) {
+      const currentSession = session(payload);
+      const selected = new Set(asArray(asObject(asObject(currentSession.config).accessories).selectedAccessoryIds));
+      const availableOptions = asArray(payload.availableOptions);
+      const catalogOptions = asArray(catalog.options);
+      const options = (availableOptions.length > 0 ? availableOptions : catalogOptions).filter(function keep(optionItem) {
+        const option = asObject(optionItem);
+        return accessoryOptionIds.includes(option.id);
+      });
+
+      const block = document.createElement("div");
+      block.className = "cfg-block";
+      const title = document.createElement("h4");
+      title.textContent = "Accessories + submit";
+      block.appendChild(title);
+
+      const row = document.createElement("div");
+      row.className = "cfg-row";
+      options.forEach(function eachOption(optionItem) {
+        const option = asObject(optionItem);
+        const optionId = typeof option.id === "string" ? option.id : "";
+        const name = typeof option.name === "string" ? option.name : "Option";
+        row.appendChild(
+          button(
+            name,
+            "cfg-chip-btn",
+            function toggleOption() {
+              if (!optionId) return;
+              runAdvance({ optionId: optionId });
+            },
+            state.busy,
+            selected.has(optionId)
+          )
+        );
+      });
+      block.appendChild(row);
+
+      const actionRow = document.createElement("div");
+      actionRow.className = "cfg-row";
+      actionRow.style.marginTop = "8px";
+      actionRow.appendChild(
+        button(
+          "Safer baseline",
+          "cfg-secondary",
+          function saferBaseline() {
+            runAdvance({ action: "safe_baseline" });
+          },
+          state.busy
+        )
+      );
+      actionRow.appendChild(
+        button(
+          state.busy ? "Submitting..." : "Submit readiness check",
+          "cfg-primary",
+          function submitNow() {
+            runSubmit();
+          },
+          state.busy
+        )
+      );
+      block.appendChild(actionRow);
+      els.stage.appendChild(block);
+    }
+
+    function renderQuickActions(payload) {
+      const currentSession = session(payload);
+      const sid = typeof currentSession.id === "string" ? currentSession.id : "";
+      const quickActions = asArray(journey(payload).quickActions).slice(0, 2);
+      els.actions.innerHTML = "";
+      quickActions.forEach(function eachAction(actionItem) {
+        const action = asObject(actionItem);
+        const value = typeof action.value === "string" ? action.value : "";
+        const label = typeof action.label === "string" ? action.label : "Continue";
+        if (!value || !sid) return;
+        els.actions.appendChild(
+          button(
+            label,
+            "cfg-quick",
+            function doQuickAction() {
+              runAdvance({ action: value });
+            },
+            state.busy
+          )
+        );
+      });
+    }
+
+    function renderPayload() {
+      const payload = state.payload || {};
+      const currentSession = session(payload);
+      const sid = typeof currentSession.id === "string" ? currentSession.id : "pending";
+      const status = sessionStatus(payload);
+      const stepNumber = step(payload);
+      const nextQuestion =
+        typeof payload.nextQuestion === "string" && payload.nextQuestion
+          ? payload.nextQuestion
+          : "Continue configuring your build.";
+      const catalog = catalogFromPayload(payload);
+      state.catalog = catalog;
+
+      const draft = getDraft(payload);
+      els.step.textContent = "Step " + String(stepNumber) + " of 5";
+      els.question.textContent = nextQuestion;
+      els.meta.textContent = "Session " + sid + " · Status " + status;
+      els.stage.innerHTML = "";
+      els.note.textContent = state.note || "";
+
+      if (stepNumber === 1) {
+        renderTemplateStep(payload, catalog, draft);
+      } else if (stepNumber === 2) {
+        renderExteriorStep(payload, catalog, draft);
+      } else if (stepNumber === 3) {
+        renderInteriorFinishStep(payload, catalog, draft);
+      } else if (stepNumber === 4) {
+        renderLayoutStep(payload, draft);
+      } else {
+        renderAccessoriesStep(payload, catalog);
+      }
+
+      renderQuickActions(payload);
+      ensureSessionHydrated(payload);
+    }
+
+    function handleToolOutput(toolResult, metadata) {
+      state.payload = readPayload(toolResult, metadata);
+      renderPayload();
+    }
+
+    function onMessage(event) {
+      if (event.source !== window.parent) return;
+      const message = event.data;
+      if (!message || message.jsonrpc !== "2.0") return;
+      if (message.method !== "ui/notifications/tool-result") return;
+      const params = asObject(message.params);
+      handleToolOutput(params.toolOutput || params, params.toolResponseMetadata || params._meta);
+    }
+
+    window.addEventListener("message", onMessage, { passive: true });
+    window.addEventListener(
+      "openai:set_globals",
+      function onGlobals(event) {
+        const globals = event && event.detail ? event.detail.globals : undefined;
+        if (!globals) return;
+        handleToolOutput(globals.toolOutput, globals.toolResponseMetadata);
+      },
+      { passive: true }
+    );
+
+    if (window.openai && window.openai.toolOutput) {
+      handleToolOutput(window.openai.toolOutput, window.openai.toolResponseMetadata);
+      return;
+    }
+
+    state.payload = {};
+    renderPayload();
+  })();
+</script>

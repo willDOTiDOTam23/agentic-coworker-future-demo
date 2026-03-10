@@ -4,6 +4,44 @@
 - **You (Product Owner):** Supplies requirements, priorities, acceptance criteria, and direction in new threads.
 - **Me (Developer + Tester):** Implements requested changes, validates against acceptance criteria, creates commits, and drives PR creation/updates.
 
+## UX/Widget Design Operating Model
+- You are the UX owner by default for the product vision, user journeys, and brand decisions.
+- I execute UI/UX work end-to-end, including layout, interaction behavior, component implementation, and visual polish.
+- Preferred source of truth:
+  - **Best quality path:** Figma-first handoff using an accessible design file and component library.
+  - **Fallback path:** Prompt-led design using explicit style + behavior specs when no Figma source is available.
+
+### Figma expectations (your question)
+- If you give me **Figma access**, I can read the file structure, style tokens, components, and constraints to generate more faithful UI code.
+- You do **not** need to hand-design every widget manually in Figma for every task.
+- You should still provide:
+  - target Figma file/component IDs when design-specific alignment is required,
+  - clear acceptance for any brand/spacing/interaction constraints not already encoded in the file.
+- If no Figma file is available, provide a compact UI brief that includes typography, spacing scale, colors, radius, and spacing hierarchy.
+
+### External UI Proposal Route
+- Keep this as an optional parallel lane for visual design experiments or alternative implementations.
+- We can use it as a second opinion for UI polish, but the workflow must stay in one repo branch strategy:
+  - only one active implementation branch,
+  - PO sign-off on one final design direction,
+  - merge only what passes the same AGENTS check and tests.
+- “External UI proposals” here are treated as “bring in externally generated frontend proposals and normalize them here,” not a separate product spec.
+
+### Prompt pattern for UI tasks
+- Include at least:
+  - screen context and user goal,
+  - data states (empty/loading/error/loaded),
+  - interaction states (hover/focus/disabled),
+  - UX constraints (mobile/desktop, a11y, brand tokens),
+  - source of truth (Figma file id + component names OR explicit style token table).
+
+### Playwright usage
+- Playwright is part of required UI quality gates for key widget flows:
+  - smoke navigation and interaction tests,
+  - screenshot capture for visual review,
+  - optional accessibility check pass for critical paths.
+- We can use this as automatic verification without asking for every run.
+
 ## Repository Norms
 - Use branch naming with the prefix `codex/` for all new work branches.
 - Keep commits focused and small.

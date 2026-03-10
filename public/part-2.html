@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Control</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body class="screen-root">
+    <main class="screen-shell">
+      <section class="hero">
+        <div class="hero-top">
+          <h1>Control</h1>
+          <p>Operational visibility: monitor configurator quality, surface issues, and tee up the Customize fix moment.</p>
+        </div>
+        <div class="hero-actions">
+          <button class="secondary" id="fullscreenToggle" aria-label="Toggle full-screen preview">
+            ⛶ Fullscreen
+          </button>
+          <button id="refreshAll" class="outline">Refresh</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Control KPIs</h3>
+        <div id="kpiGrid" class="kpi-grid"></div>
+      </section>
+
+      <section class="card">
+        <div class="panel-header">
+          <h3>Control Board</h3>
+          <div>
+            <span id="opSummary" class="status-badge">Loading metrics...</span>
+          </div>
+        </div>
+        <div class="split">
+          <div class="panel">
+            <h4>Priority Queue</h4>
+            <div class="item-list" id="priorityQueue"></div>
+          </div>
+          <div class="panel">
+            <h4>Immediate Fixes</h4>
+            <div class="item-list" id="immediateFixes"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Drill-down</h3>
+        <div class="tab-row" role="tablist">
+          <button role="tab" data-tab="performance" class="active">Performance Bugs</button>
+          <button role="tab" data-tab="ideas">Feature Ideas</button>
+        </div>
+        <div id="tabPanelPerformance" class="item-list"></div>
+        <div id="tabPanelIdeas" class="item-list" style="display:none;"></div>
+      </section>
+
+      <section class="card">
+        <h3>Recent Transactions</h3>
+        <div id="recentTransactions" class="item-list"></div>
+      </section>
+
+      <div id="detailModal" class="modal" aria-hidden="true">
+        <div class="modal-card">
+          <div class="panel-header">
+            <h3>Detail</h3>
+            <button id="closeModal">Close</button>
+          </div>
+          <p id="detailTitle"></p>
+          <div id="detailBody" class="stack"></div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const ui = {
+        refreshAll: document.getElementById("refreshAll"),
+        fullscreenToggle: document.getElementById("fullscreenToggle"),
+        kpiGrid: document.getElementById("kpiGrid"),
+        opSummary: document.getElementById("opSummary"),
+        priorityQueue: document.getElementById("priorityQueue"),
+        immediateFixes: document.getElementById("immediateFixes"),
+        performancePanel: document.getElementById("tabPanelPerformance"),
+        ideasPanel: document.getElementById("tabPanelIdeas"),
+        recentTransactions: document.getElementById("recentTransactions"),
+        detailModal: document.getElementById("detailModal"),
+        detailTitle: document.getElementById("detailTitle"),
+        detailBody: document.getElementById("detailBody"),
+        closeModal: document.getElementById("closeModal"),
+        tabs: document.querySelectorAll("[role=tab]")
+      };
+
+      const state = {
+        kpis: [],
+        dashboard: null,
+        board: null,
+        activeTab: "performance",
+        raw: null
+      };
+
+      function money(value) {
+        return `$${Number(value ?? 0).toLocaleString()}`;
+      }
+
+      function badgeClass(status) {
+        if (status === "good") return "good";
+        if (status === "warning") return "warning";
+        if (status === "bad") return "bad";
+        return "";
+      }
+
+      function callJson(path) {
+        return fetch(path).then(async (response) => {
+          const body = await response.json();
+          if (!response.ok) {
+            throw new Error(body.error || "Request failed.");
+          }
+          return body;
+        });
+      }
+
+      function setKpiCards(cards) {
+        ui.kpiGrid.innerHTML = "";
+        cards.forEach((card) => {
+          const node = document.createElement("div");
+          node.className = `kpi-card ${badgeClass(card.status)}`;
+          node.innerHTML = `
+            <small>${card.title}</small>
+            <strong>${card.value}</strong>
+            ${card.delta ? `<small>${card.delta}</small>` : ""}
+          `;
+          ui.kpiGrid.appendChild(node);
+        });
+      }
+
+      function setList(container, rows, type) {
+        container.innerHTML = "";
+        if (!rows.length) {
+          const empty = document.createElement("div");
+          empty.className = "item-card";
+          empty.textContent = `No ${type} right now.`;
+          container.appendChild(empty);
+          return;
+        }
+
+        rows.forEach((row) => {
+          const item = document.createElement("button");
+          item.className = "item-card";
+          item.style.textAlign = "left";
+          item.innerHTML = `
+            <strong>${row.title}</strong>
+            <p>${row.rationale || row.description || row.sessionId || "No details available."}</p>
+            ${row.impact ? `<span class="status-badge ${badgeClass(row.impact === "high" ? "bad" : "warning")}">${row.impact}</span>` : ""}
+          `;
+          item.addEventListener("click", () => openDetail(row));
+          container.appendChild(item);
+        });
+      }
+
+      function setTransactions(rows) {
+        ui.recentTransactions.innerHTML = "";
+        if (!rows.length) {
+          const node = document.createElement("div");
+          node.className = "item-card";
+          node.textContent = "No transactions yet.";
+          ui.recentTransactions.appendChild(node);
+          return;
+        }
+
+        rows.forEach((tx) => {
+          const node = document.createElement("div");
+          node.className = "item-card";
+          node.innerHTML = `
+            <strong>${tx.sessionLabel}</strong>
+            <p>${money(tx.amountUsd)} • ${new Date(tx.createdAt).toLocaleString()}</p>
+          `;
+          ui.recentTransactions.appendChild(node);
+        });
+      }
+
+      function openDetail(row) {
+        ui.detailModal.classList.add("show");
+        ui.detailModal.setAttribute("aria-hidden", "false");
+        ui.detailTitle.textContent = row.title || row.sessionId || "Item details";
+
+        ui.detailBody.innerHTML = "";
+        const id = document.createElement("p");
+        id.textContent = `ID: ${row.id}`;
+        const rationale = document.createElement("p");
+        rationale.textContent = row.rationale || row.description || row.hint || "No rationale available.";
+        const score = document.createElement("p");
+        score.textContent = `Score: ${row.score ?? "n/a"} • Confidence: ${row.confidence ? `${Math.round(row.confidence * 100)}%` : "n/a"}`;
+        ui.detailBody.appendChild(id);
+        ui.detailBody.appendChild(rationale);
+        ui.detailBody.appendChild(score);
+
+        if (row.actionRecommendations) {
+          const recommendation = document.createElement("p");
+          recommendation.innerHTML = `<strong>Recommended action:</strong> ${row.actionRecommendations}`;
+          ui.detailBody.appendChild(recommendation);
+        }
+      }
+
+      function setTabs(tab) {
+        state.activeTab = tab;
+        ui.performancePanel.style.display = tab === "performance" ? "grid" : "none";
+        ui.ideasPanel.style.display = tab === "ideas" ? "grid" : "none";
+        ui.tabs.forEach((button) => {
+          const next = button.dataset.tab;
+          button.classList.toggle("active", next === tab);
+        });
+      }
+
+      function hydrateDrillDown() {
+        const dashboard = state.dashboard;
+        const performance = dashboard?.performanceBugs ?? [];
+        const ideas = dashboard?.featureIdeas ?? [];
+        setList(state.activeTab === "performance" ? ui.performancePanel : ui.ideasPanel, state.activeTab === "performance" ? performance : ideas, state.activeTab);
+      }
+
+      function render() {
+        if (!state.dashboard || !state.board) return;
+        setKpiCards(state.dashboard.kpis ?? []);
+        ui.opSummary.textContent = `${state.board.priorityQueue.length} board items · ${state.board.immediateFixes.length} immediate fixes`;
+        setList(ui.priorityQueue, state.board.priorityQueue.slice(0, 12), "queue items");
+        setList(ui.immediateFixes, state.board.immediateFixes.slice(0, 12), "immediate fixes");
+        setTransactions(state.dashboard.recentTransactions ?? []);
+        hydrateDrillDown();
+      }
+
+      async function loadDashboard() {
+        const [dashboard, board] = await Promise.all([
+          callJson("/api/ops/dashboard"),
+          callJson("/api/ops/board")
+        ]);
+        state.dashboard = dashboard;
+        state.board = board;
+        render();
+      }
+
+      async function bootstrap() {
+        await loadDashboard();
+      }
+
+      ui.refreshAll.addEventListener("click", loadDashboard);
+
+      ui.tabs.forEach((button) => {
+        button.addEventListener("click", () => {
+          setTabs(button.dataset.tab);
+          hydrateDrillDown();
+        });
+      });
+
+      ui.closeModal.addEventListener("click", () => {
+        ui.detailModal.classList.remove("show");
+        ui.detailModal.setAttribute("aria-hidden", "true");
+      });
+
+      ui.detailModal.addEventListener("click", (event) => {
+        if (event.target === ui.detailModal) {
+          ui.detailModal.classList.remove("show");
+          ui.detailModal.setAttribute("aria-hidden", "true");
+        }
+      });
+
+      async function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen?.();
+          document.body.classList.add("app-fullscreen");
+          return;
+        }
+        await document.exitFullscreen?.();
+        document.body.classList.remove("app-fullscreen");
+      }
+
+      ui.fullscreenToggle.addEventListener("click", () => {
+        toggleFullscreen().catch(() => {
+          document.body.classList.toggle("app-fullscreen");
+        });
+      });
+
+      setTabs("performance");
+      bootstrap().catch(() => {
+        ui.kpiGrid.innerHTML = '<div class="item-card">Unable to load dashboard data.</div>';
+      });
+    </script>
+  </body>
+</html>

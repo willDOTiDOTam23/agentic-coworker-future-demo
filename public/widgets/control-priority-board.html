@@ -1,0 +1,164 @@
+<style>
+  :root {
+    color-scheme: light;
+  }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: linear-gradient(180deg, #f7f8fa 0%, #eef2f7 100%);
+    color: #0f172a;
+  }
+
+  .ctrl-shell {
+    padding: 16px;
+  }
+
+  .ctrl-header h2 {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.2;
+  }
+
+  .ctrl-header p {
+    margin: 4px 0 0 0;
+    color: #334155;
+    font-size: 13px;
+  }
+
+  .ctrl-card {
+    margin-top: 12px;
+    background: #ffffff;
+    border: 1px solid #dbe4ef;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+  }
+
+  .ctrl-summary {
+    margin: 0;
+    font-size: 13px;
+    color: #1e293b;
+  }
+
+  .ctrl-list {
+    margin: 10px 0 0 18px;
+    padding: 0;
+  }
+
+  .ctrl-list li {
+    margin: 0 0 6px 0;
+    font-size: 13px;
+    line-height: 1.35;
+    color: #0f172a;
+  }
+
+  .ctrl-priority {
+    display: inline-block;
+    min-width: 30px;
+    font-weight: 700;
+    color: #b91c1c;
+  }
+</style>
+
+<section class="ctrl-shell" role="region" aria-label="Control board view">
+  <header class="ctrl-header">
+    <h2>Control</h2>
+    <p>Operational visibility and issue detection</p>
+  </header>
+
+  <article class="ctrl-card" aria-live="polite">
+    <p id="ctrl-summary" class="ctrl-summary">Waiting for board data.</p>
+    <ol id="ctrl-list" class="ctrl-list"></ol>
+  </article>
+</section>
+
+<script>
+  (function initControlWidget() {
+    const summaryEl = document.getElementById("ctrl-summary");
+    const listEl = document.getElementById("ctrl-list");
+
+    function asObject(value) {
+      return value && typeof value === "object" ? value : {};
+    }
+
+    function asArray(value) {
+      return Array.isArray(value) ? value : [];
+    }
+
+    function readStructuredPayload(toolResult) {
+      const resultObject = asObject(toolResult);
+      const meta = asObject(resultObject._meta);
+      const widgetPayload = asObject(meta.widgetPayload);
+      if (Object.keys(widgetPayload).length > 0) {
+        const data = asObject(widgetPayload.data);
+        if (Object.keys(data).length > 0) {
+          return data;
+        }
+        return widgetPayload;
+      }
+      const structured = asObject(resultObject.structuredContent);
+      if (Object.keys(structured).length > 0) {
+        return structured;
+      }
+      return resultObject;
+    }
+
+    function readBoard(payload) {
+      const board = asObject(payload.board);
+      if (Array.isArray(board.priorityQueue)) {
+        return board;
+      }
+      return payload;
+    }
+
+    function render(toolResult) {
+      const payload = readStructuredPayload(toolResult);
+      const board = readBoard(payload);
+      const queue = asArray(board.priorityQueue).slice(0, 5);
+      const immediateFixes = asArray(board.immediateFixes);
+
+      summaryEl.textContent = String(queue.length) + " ranked items · " + String(immediateFixes.length) + " immediate fixes";
+      listEl.innerHTML = "";
+
+      if (queue.length === 0) {
+        const item = document.createElement("li");
+        item.textContent = "No active issues.";
+        listEl.appendChild(item);
+        return;
+      }
+
+      queue.forEach(function appendIssue(issue) {
+        const item = asObject(issue);
+        const priority = typeof item.priority === "string" ? item.priority : "P2";
+        const title = typeof item.title === "string" ? item.title : "Untitled issue";
+        const li = document.createElement("li");
+        li.innerHTML = "<span class='ctrl-priority'>" + priority + "</span>" + title;
+        listEl.appendChild(li);
+      });
+    }
+
+    function onMessage(event) {
+      if (event.source !== window.parent) return;
+      const message = event.data;
+      if (!message || message.jsonrpc !== "2.0") return;
+      if (message.method !== "ui/notifications/tool-result") return;
+      render(message.params);
+    }
+
+    window.addEventListener("message", onMessage, { passive: true });
+    window.addEventListener(
+      "openai:set_globals",
+      function onGlobals(event) {
+        const globals = event && event.detail ? event.detail.globals : undefined;
+        if (!globals) return;
+        render(globals.toolOutput);
+      },
+      { passive: true }
+    );
+
+    if (window.openai && window.openai.toolOutput) {
+      render(window.openai.toolOutput);
+    }
+  })();
+</script>

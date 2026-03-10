@@ -1,0 +1,17 @@
+<svg width="980" height="320" viewBox="0 0 980 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="24" y="24" width="272" height="272" rx="64" fill="url(#g2)"/>
+  <rect x="105" y="84" width="14" height="152" rx="7" fill="white" fill-opacity="0.86"/>
+  <rect x="153" y="84" width="14" height="152" rx="7" fill="white" fill-opacity="0.86"/>
+  <rect x="201" y="84" width="14" height="152" rx="7" fill="white" fill-opacity="0.86"/>
+  <rect x="81" y="138" width="62" height="34" rx="17" fill="white"/>
+  <rect x="129" y="188" width="62" height="34" rx="17" fill="white"/>
+  <rect x="177" y="156" width="62" height="34" rx="17" fill="white"/>
+  <rect x="96" y="246" width="128" height="16" rx="8" fill="#6EB8FF"/>
+  <text x="340" y="197" fill="#0B1320" font-size="122" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif" font-weight="650" letter-spacing="-2">Control</text>
+  <defs>
+    <linearGradient id="g2" x1="42" y1="40" x2="264" y2="278" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B1F28"/>
+      <stop offset="1" stop-color="#454C5C"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="duneTitle duneDesc">
+  <title id="duneTitle">Dune Nomad concept art</title>
+  <desc id="duneDesc">Stylized monochrome gray concept van with digital-work identity</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d5d8df"/>
+      <stop offset="100%" stop-color="#d6d0cb"/>
+    </linearGradient>
+    <linearGradient id="van" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1d1f23"/>
+      <stop offset="100%" stop-color="#4a4f56"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#bg)"/>
+  <rect x="90" y="176" width="760" height="176" rx="22" fill="url(#van)" stroke="#9ca3af" stroke-width="3"/>
+  <rect x="160" y="118" width="600" height="70" rx="15" fill="#2f333a" stroke="#a7aeb8" stroke-width="4"/>
+  <rect x="190" y="226" width="170" height="118" fill="#4b525c"/>
+  <rect x="385" y="226" width="170" height="118" fill="#393d45"/>
+  <rect x="580" y="226" width="170" height="118" fill="#4b525c"/>
+  <circle cx="260" cy="381" r="44" fill="#141515"/>
+  <circle cx="720" cy="381" r="44" fill="#141515"/>
+  <path d="M220 320l260-48l280 48" fill="none" stroke="#c3c8d0" stroke-width="8" opacity="0.7" stroke-linecap="round"/>
+  <rect x="620" y="95" width="130" height="55" rx="13" fill="#a4a9b0" opacity="0.8"/>
+  <rect x="300" y="95" width="130" height="55" rx="13" fill="#8f959d" opacity="0.8"/>
+</svg>

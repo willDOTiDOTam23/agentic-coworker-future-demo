@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" role="img" aria-labelledby="loungerTitle luminsDesc">
+  <title id="loungerTitle">Lumina Lounger concept art</title>
+  <desc id="luminsDesc">Luxuriously styled warm-night van concept with cinematic glow</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e4dfd0"/>
+      <stop offset="100%" stop-color="#b4ab96"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eec48d"/>
+      <stop offset="100%" stop-color="#b57d45"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="540" fill="url(#bg)"/>
+  <rect x="90" y="172" width="760" height="178" rx="24" fill="#f7f4ee" stroke="#6f6653" stroke-width="3"/>
+  <rect x="160" y="112" width="620" height="72" rx="18" fill="#e5dcc9" stroke="#867a64" stroke-width="3"/>
+  <rect x="165" y="130" width="180" height="56" fill="#1f2e21" opacity="0.5"/>
+  <rect x="365" y="130" width="180" height="56" fill="#1f2e21" opacity="0.5"/>
+  <rect x="565" y="130" width="180" height="56" fill="#1f2e21" opacity="0.5"/>
+  <circle cx="260" cy="377" r="46" fill="#29261f"/>
+  <circle cx="720" cy="377" r="46" fill="#29261f"/>
+  <circle cx="260" cy="377" r="16" fill="url(#glow)"/>
+  <circle cx="720" cy="377" r="16" fill="url(#glow)"/>
+  <rect x="235" y="250" width="480" height="90" rx="18" fill="#d6cfc0" opacity="0.85"/>
+  <path d="M205 320H730" stroke="#9d8d72" stroke-width="6" stroke-dasharray="4 10"/>
+  <path d="M120 420c110 24 190 24 240 24h230c57 0 129 0 238-22" stroke="#74664e" stroke-width="8" fill="none" opacity="0.5"/>
+</svg>
