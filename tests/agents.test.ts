@@ -4,7 +4,7 @@ import { createVisualizationAgent } from "../src/agents/configuration-visualizer
 import { parseAppConfig } from "../src/lib/config.js";
 
 describe("ops agent graph", () => {
-  it("applies reasoning effort to the full handoff chain", () => {
+  it("keeps the monitor on the requested reasoning level while capping artifact agents for responsiveness", () => {
     const config = parseAppConfig({
       NODE_ENV: "test",
       PORT: "3100",
@@ -22,8 +22,8 @@ describe("ops agent graph", () => {
 
     expect(rootAgent.model).toBe("gpt-5.4");
     expect(rootAgent.modelSettings.reasoning?.effort).toBe("xhigh");
-    expect(designPlanner.modelSettings.reasoning?.effort).toBe("xhigh");
-    expect(supplyOrchestrator.modelSettings.reasoning?.effort).toBe("xhigh");
+    expect(designPlanner.modelSettings.reasoning?.effort).toBe("medium");
+    expect(supplyOrchestrator.modelSettings.reasoning?.effort).toBe("medium");
   });
 
   it("validates OPENAI_REASONING_EFFORT values", () => {

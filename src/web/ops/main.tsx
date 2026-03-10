@@ -100,6 +100,24 @@ function mergeOpsEvents(historical: OpsEvent[], live: OpsEvent[]) {
     .slice(0, 30);
 }
 
+function shouldAutoSelectSession(
+  nextSession: ConfigurationDetail["session"],
+  selectedId: string | null,
+  sessions: ConfigurationListItem[],
+  source?: unknown
+) {
+  if (!selectedId || selectedId === nextSession.id) {
+    return true;
+  }
+
+  const selectedSession = sessions.find((session) => session.id === selectedId);
+  if (!selectedSession) {
+    return true;
+  }
+
+  return source === "created" || (selectedSession.status === "submitted" && nextSession.status === "draft");
+}
+
 function App() {
   const [sessions, setSessions] = useState<ConfigurationListItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -260,7 +278,14 @@ function App() {
             ...current,
             session: nextSession
           }));
-          if (!selectedIdRef.current) {
+          if (
+            shouldAutoSelectSession(
+              nextSession,
+              selectedIdRef.current,
+              sessionsRef.current,
+              payload.metadata?.source
+            )
+          ) {
             startTransition(() => {
               setSelectedId(nextSession.id);
             });

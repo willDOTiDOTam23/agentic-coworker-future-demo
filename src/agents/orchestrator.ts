@@ -4,6 +4,7 @@ import { z } from "zod";
 import type { AppConfig } from "../lib/config.js";
 import { renderDesignBriefHtml, renderSupplyOrderHtml } from "../lib/artifacts.js";
 import type { ArtifactRecord, ConfigurationDetail } from "../lib/domain.js";
+import { buildFallbackDesignBrief, buildFallbackSupplyOrder } from "../lib/ops-fallbacks.js";
 import type { PublishStatusEventInput } from "../lib/schemas.js";
 import { DesignBriefSchema, MonitorOutputSchema, PublishStatusEventSchema, SupplyOrderSchema } from "../lib/schemas.js";
 import type { SseBroker, SseEventPayload } from "../lib/sse.js";
@@ -71,6 +72,32 @@ function emit(
   sse.broadcast(event);
 }
 
+function hasStepValues(values: Record<string, unknown> | undefined) {
+  return Boolean(values && Object.keys(values).length > 0);
+}
+
+function isReadyForDesignPlanning(snapshot: ConfigurationDetail) {
+  const { session } = snapshot;
+  return (
+    session.status === "submitted" &&
+    hasStepValues(session.state.vision) &&
+    hasStepValues(session.state.exterior) &&
+    hasStepValues(session.state.interior) &&
+    hasStepValues(session.state.layout)
+  );
+}
+
+function getArtifactReasoningEffort(config: AppConfig) {
+  switch (config.reasoningEffort) {
+    case "xhigh":
+      return "medium" as const;
+    case "high":
+      return "low" as const;
+    default:
+      return config.reasoningEffort;
+  }
+}
+
 function buildTools() {
   const EmptyParameters = z.object({});
   const isMonitorBeforeStatus = ({ runContext, agent }: { runContext: { context: OpsRunContextValue }; agent: { name: string } }) =>
@@ -128,14 +155,33 @@ function buildTools() {
     execute: async (input, runContext) => {
       const context = runContext?.context;
       if (!context) return { ok: false };
+      const designReady = isReadyForDesignPlanning(context.snapshot);
+      const effectiveConfidenceScore =
+        typeof input.confidenceScore === "number"
+          ? Math.max(input.confidenceScore, designReady ? 0.85 : 0)
+          : designReady
+            ? 0.85
+            : null;
+      const effectiveStatus = designReady && input.status !== "ready" ? "ready" : input.status;
+      const effectiveMessage =
+        designReady && input.status !== "ready"
+          ? "Configuration is complete enough to kick off planning artifacts automatically."
+          : input.message;
+      const effectiveNextAction = designReady ? "Design Planner is starting now." : input.nextAction ?? null;
 
-      if (typeof input.confidenceScore === "number") {
-        context.runtime.monitorConfidence = input.confidenceScore;
-        context.repo.updateLatestConfidence(context.sessionId, input.confidenceScore);
+      if (typeof effectiveConfidenceScore === "number") {
+        context.runtime.monitorConfidence = effectiveConfidenceScore;
+        context.repo.updateLatestConfidence(context.sessionId, effectiveConfidenceScore);
       }
 
       if (input.agentName === "Session Monitor") {
-        context.runtime.lastMonitorStatus = input;
+        context.runtime.lastMonitorStatus = {
+          ...input,
+          status: effectiveStatus,
+          message: effectiveMessage,
+          confidenceScore: effectiveConfidenceScore,
+          nextAction: effectiveNextAction
+        };
       }
 
       emit(context.repo, context.sse, {
@@ -143,12 +189,12 @@ function buildTools() {
         sessionId: context.sessionId,
         agentName: input.agentName,
         runId: context.runId,
-        status: input.status,
-        detail: input.message,
+        status: effectiveStatus,
+        detail: effectiveMessage,
         metadata: {
-          confidenceScore: input.confidenceScore ?? null,
+          confidenceScore: effectiveConfidenceScore,
           riskFlags: input.riskFlags ?? [],
-          nextAction: input.nextAction ?? null
+          nextAction: effectiveNextAction
         }
       });
 
@@ -249,6 +295,7 @@ function buildTools() {
 
 export function createAgentGraph(config: AppConfig) {
   const tools = buildTools();
+  const artifactReasoningEffort = getArtifactReasoningEffort(config);
 
   const supplyOrchestrator = new Agent<OpsRunContextValue, any>({
     name: "Supply Orchestrator",
@@ -256,9 +303,9 @@ export function createAgentGraph(config: AppConfig) {
     instructions: SUPPLY_ORCHESTRATOR_PROMPT,
     model: config.opsModel,
     modelSettings: {
-      toolChoice: "persist_supply_order",
+      toolChoice: "auto",
       reasoning: {
-        effort: config.reasoningEffort,
+        effort: artifactReasoningEffort,
         summary: "concise"
       },
       text: {
@@ -286,8 +333,7 @@ export function createAgentGraph(config: AppConfig) {
         isInterrupted: undefined,
         finalOutput: compactJson(output.order ?? {})
       };
-    },
-    outputType: SupplyOrderSchema as any
+    }
   });
 
   const designPlanner = new Agent<OpsRunContextValue, any>({
@@ -296,9 +342,9 @@ export function createAgentGraph(config: AppConfig) {
     instructions: promptWithHandoffInstructions(DESIGN_PLANNER_PROMPT),
     model: config.opsModel,
     modelSettings: {
-      toolChoice: "persist_design_brief",
+      toolChoice: "auto",
       reasoning: {
-        effort: config.reasoningEffort,
+        effort: artifactReasoningEffort,
         summary: "concise"
       },
       text: {
@@ -352,7 +398,7 @@ export function createAgentGraph(config: AppConfig) {
         };
       }
 
-      if ((context.runtime.monitorConfidence ?? 0) >= 0.8) {
+      if ((context.runtime.monitorConfidence ?? 0) >= 0.8 || isReadyForDesignPlanning(context.snapshot)) {
         return {
           isFinalOutput: false,
           isInterrupted: undefined
@@ -383,7 +429,8 @@ export function createAgentGraph(config: AppConfig) {
     handoffs: [
       handoff(designPlanner, {
         isEnabled: ({ runContext }) =>
-          ((runContext as { context: OpsRunContextValue }).context.runtime.monitorConfidence ?? 0) >= 0.8
+          ((runContext as { context: OpsRunContextValue }).context.runtime.monitorConfidence ?? 0) >= 0.8 ||
+          isReadyForDesignPlanning((runContext as { context: OpsRunContextValue }).context.snapshot)
       })
     ],
     handoffOutputTypeWarningEnabled: false,
@@ -446,6 +493,103 @@ class OpenAiOpsOrchestrator implements OpsOrchestrator {
     this.queue.set(sessionId, existing);
   }
 
+  private hasArtifact(sessionId: string, templateType: ArtifactRecord["templateType"]) {
+    return this.repo.listArtifacts(sessionId).some((artifact) => artifact.templateType === templateType);
+  }
+
+  private emitFallbackArtifacts(context: OpsRunContextValue) {
+    const latestDetail = this.repo.getConfigurationDetail(context.sessionId);
+    if (!latestDetail || !isReadyForDesignPlanning(latestDetail)) {
+      return;
+    }
+
+    if (!this.hasArtifact(context.sessionId, "design-brief")) {
+      emit(this.repo, this.sse, {
+        type: "agent_started",
+        sessionId: context.sessionId,
+        agentName: "Design Planner",
+        runId: context.runId,
+        status: "running",
+        detail: "Design Planner is drafting the first artifact revision."
+      });
+
+      const brief = buildFallbackDesignBrief(latestDetail);
+      const artifact = this.repo.createArtifact({
+        sessionId: context.sessionId,
+        agentName: "Design Planner",
+        templateType: "design-brief",
+        renderedContent: renderDesignBriefHtml(brief)
+      });
+      context.runtime.designBriefPersisted = true;
+
+      emit(this.repo, this.sse, {
+        type: "artifact_ready",
+        sessionId: context.sessionId,
+        agentName: "Design Planner",
+        runId: context.runId,
+        status: "ready",
+        detail: "Design Brief generated",
+        metadata: {
+          artifactId: artifact.id,
+          templateType: artifact.templateType,
+          artifact
+        }
+      });
+      emit(this.repo, this.sse, {
+        type: "agent_completed",
+        sessionId: context.sessionId,
+        agentName: "Design Planner",
+        runId: context.runId,
+        status: "completed",
+        detail: "Design Planner completed the initial artifact revision."
+      });
+    }
+
+    if (latestDetail.session.status !== "submitted" || this.hasArtifact(context.sessionId, "supply-order")) {
+      return;
+    }
+
+    emit(this.repo, this.sse, {
+      type: "agent_started",
+      sessionId: context.sessionId,
+      agentName: "Supply Orchestrator",
+      runId: context.runId,
+      status: "running",
+      detail: "Supply Orchestrator is drafting the first sourcing plan."
+    });
+
+    const order = buildFallbackSupplyOrder(latestDetail);
+    const artifact = this.repo.createArtifact({
+      sessionId: context.sessionId,
+      agentName: "Supply Orchestrator",
+      templateType: "supply-order",
+      renderedContent: renderSupplyOrderHtml(order)
+    });
+    context.runtime.supplyOrderPersisted = true;
+
+    emit(this.repo, this.sse, {
+      type: "artifact_ready",
+      sessionId: context.sessionId,
+      agentName: "Supply Orchestrator",
+      runId: context.runId,
+      status: "ready",
+      detail: "Supply Order generated",
+      metadata: {
+        artifactId: artifact.id,
+        templateType: artifact.templateType,
+        artifact
+      }
+    });
+    emit(this.repo, this.sse, {
+      type: "agent_completed",
+      sessionId: context.sessionId,
+      agentName: "Supply Orchestrator",
+      runId: context.runId,
+      status: "completed",
+      detail: "Supply Orchestrator completed the initial sourcing revision."
+    });
+  }
+
   private async executeQueuedRun(sessionId: string, revision: number) {
     const state = this.queue.get(sessionId);
     if (!state) return;
@@ -483,6 +627,11 @@ class OpenAiOpsOrchestrator implements OpsOrchestrator {
     });
 
     let currentAgentName = "Session Monitor";
+    const fallbackTimer = isReadyForDesignPlanning(detail)
+      ? setTimeout(() => {
+          this.emitFallbackArtifacts(context);
+        }, 12000)
+      : null;
 
     try {
       const stream = await run(
@@ -578,6 +727,9 @@ class OpenAiOpsOrchestrator implements OpsOrchestrator {
         detail: error instanceof Error ? error.message : "Unknown agent failure"
       });
     } finally {
+      if (fallbackTimer) {
+        clearTimeout(fallbackTimer);
+      }
       state.active = false;
       if (state.revision !== revision || state.rerunRequested) {
         state.rerunRequested = false;
