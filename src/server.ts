@@ -11,7 +11,7 @@ import {
 import { appConfig, assertOpenAiConfigured, type AppConfig } from "./lib/config.js";
 import { createDatabase, type AppDatabase } from "./lib/database.js";
 import { buildRealtimeClientSecretPayload } from "./lib/realtime.js";
-import { SqliteRepository } from "./lib/repository.js";
+import { SqliteRepository, StepSequenceError } from "./lib/repository.js";
 import { SaveConfigurationStepSchema } from "./lib/schemas.js";
 import { SseBroker } from "./lib/sse.js";
 
@@ -232,8 +232,15 @@ export function createApp(runtime: RuntimeDeps = createRuntime()): Express {
       runtime.orchestrator.queueRun(req.params.id, `step:${parsed.data.step}`);
       res.json({ session, visualSpec });
     } catch (error) {
-      res.status(404).json({
-        error: error instanceof Error ? error.message : "Unable to save step."
+      const statusCode = error instanceof StepSequenceError ? 409 : 404;
+      res.status(statusCode).json({
+        error: error instanceof Error ? error.message : "Unable to save step.",
+        ...(error instanceof StepSequenceError
+          ? {
+              expectedStep: error.expectedStep,
+              receivedStep: error.receivedStep
+            }
+          : {})
       });
     }
   });

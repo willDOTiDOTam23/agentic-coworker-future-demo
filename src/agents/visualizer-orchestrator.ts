@@ -136,13 +136,22 @@ class OpenAiVisualizationOrchestrator implements VisualizationOrchestrator {
         stepRail: base.stepRail,
         exteriorScene: {
           ...candidate.exteriorScene,
+          requestedColor: base.exteriorScene.requestedColor,
+          renderColor: base.exteriorScene.renderColor,
           bodyColor: base.exteriorScene.bodyColor,
+          wheelRadius: base.exteriorScene.wheelRadius,
+          wheelVariant: base.exteriorScene.wheelVariant,
           driveSide: base.exteriorScene.driveSide
         },
         layoutFloorplan: {
           ...candidate.layoutFloorplan,
           driveSide: base.layoutFloorplan.driveSide,
-          frontSeatConfig: base.layoutFloorplan.frontSeatConfig
+          frontSeatConfig: base.layoutFloorplan.frontSeatConfig,
+          legend: base.layoutFloorplan.legend
+        },
+        gearScene: {
+          ...candidate.gearScene,
+          attachmentStates: base.gearScene.attachmentStates
         }
       }),
       {

@@ -27,13 +27,15 @@ function buildSession(currentStep: number, state: Record<string, Record<string, 
 }
 
 function buildVisualSpec(overrides: Record<string, unknown>) {
-  return {
+  const base = {
     generatedBy: "deterministic",
     updatedAt: "2026-03-09T16:05:00.000Z",
     currentStep: "exterior",
     theme: {
       paletteName: "Forest calm",
       backgroundLocked: true,
+      requestedExteriorColor: "Forest green",
+      resolvedExteriorColor: "#6c876f",
       backgroundA: "#dce8dc",
       backgroundB: "#bfd4c0",
       accent: "#537857",
@@ -55,10 +57,13 @@ function buildVisualSpec(overrides: Record<string, unknown>) {
       chips: ["Surf weekends", "Calm", "Coastal"]
     },
     exteriorScene: {
+      requestedColor: "Forest green",
+      renderColor: "#6c876f",
       bodyColor: "#6c876f",
       finish: "Satin finish",
       wheelRadius: 32,
       wheelStyle: "All-terrain alloy",
+      wheelVariant: "off-road",
       rackStyle: "Expedition rack",
       auxLights: "Trail lights",
       powertrain: "AWD",
@@ -68,6 +73,11 @@ function buildVisualSpec(overrides: Record<string, unknown>) {
       rearCarrier: "Swing-out bike tray",
       ladder: true,
       campLighting: "Perimeter camp lights",
+      showRack: true,
+      showAuxLights: true,
+      showRearCarrier: true,
+      showLadder: true,
+      suspensionLift: 10,
       badges: ["AWD", "Satin"],
       overlays: ["Solar deck", "Swing-out bike tray", "Perimeter camp lights"]
     },
@@ -86,12 +96,20 @@ function buildVisualSpec(overrides: Record<string, unknown>) {
       frontSeatConfig: "Twin captain seats",
       notes: ["Left-hand drive", "Compact galley", "Murphy bed"],
       zones: [
-        { kind: "driver", x: 0, y: 0, w: 2, h: 2, label: "LHD cockpit", emphasis: "primary" },
-        { kind: "passenger", x: 2, y: 0, w: 2, h: 2, label: "Passenger seat", emphasis: "secondary" },
-        { kind: "galley", x: 0, y: 2, w: 4, h: 2, label: "Compact galley", emphasis: "primary" },
-        { kind: "dinette", x: 4, y: 2, w: 4, h: 2, label: "Bench dinette", emphasis: "support" },
-        { kind: "storage", x: 8, y: 2, w: 4, h: 2, label: "Bike garage", emphasis: "secondary" },
-        { kind: "bed", x: 2, y: 4, w: 8, h: 2, label: "Murphy bed", emphasis: "primary" }
+        { kind: "driver", x: 0, y: 0, w: 2, h: 2, label: "LHD cockpit", shortLabel: "DR", emphasis: "primary" },
+        { kind: "passenger", x: 2, y: 0, w: 2, h: 2, label: "Passenger seat", shortLabel: "PS", emphasis: "secondary" },
+        { kind: "galley", x: 0, y: 2, w: 4, h: 2, label: "Compact galley", shortLabel: "GA", emphasis: "primary" },
+        { kind: "dinette", x: 4, y: 2, w: 4, h: 2, label: "Bench dinette", shortLabel: "DN", emphasis: "support" },
+        { kind: "storage", x: 8, y: 2, w: 4, h: 2, label: "Bike garage", shortLabel: "ST", emphasis: "secondary" },
+        { kind: "bed", x: 2, y: 4, w: 8, h: 2, label: "Murphy bed", shortLabel: "BD", emphasis: "primary" }
+      ],
+      legend: [
+        { kind: "driver", label: "LHD cockpit", shortLabel: "DR", emphasis: "primary" },
+        { kind: "passenger", label: "Passenger seat", shortLabel: "PS", emphasis: "secondary" },
+        { kind: "galley", label: "Compact galley", shortLabel: "GA", emphasis: "primary" },
+        { kind: "dinette", label: "Bench dinette", shortLabel: "DN", emphasis: "support" },
+        { kind: "storage", label: "Bike garage", shortLabel: "ST", emphasis: "secondary" },
+        { kind: "bed", label: "Murphy bed", shortLabel: "BD", emphasis: "primary" }
       ]
     },
     gearScene: {
@@ -100,15 +118,51 @@ function buildVisualSpec(overrides: Record<string, unknown>) {
       ladder: true,
       powerModule: "Lithium off-grid pack",
       campLighting: "Perimeter camp lights",
+      attachmentStates: [
+        { id: "roof-gear", label: "Solar deck", active: true },
+        { id: "rear-carrier", label: "Swing-out bike tray", active: true },
+        { id: "ladder", label: "Rear ladder", active: true },
+        { id: "camp-lighting", label: "Perimeter camp lights", active: true }
+      ],
       modules: [
         { id: "roof-gear", label: "Roof gear", detail: "Solar deck", status: "active" },
         { id: "rear-carrier", label: "Rear carrier", detail: "Swing-out bike tray", status: "active" },
         { id: "power-module", label: "Power module", detail: "Lithium off-grid pack", status: "active" },
         { id: "camp-lighting", label: "Camp lighting", detail: "Perimeter camp lights", status: "active" }
       ]
-    },
-    ...overrides
+    }
   };
+
+  const next = {
+    ...base,
+    ...overrides,
+    theme: {
+      ...base.theme,
+      ...(overrides.theme as Record<string, unknown> | undefined)
+    },
+    visionHighlights: {
+      ...base.visionHighlights,
+      ...(overrides.visionHighlights as Record<string, unknown> | undefined)
+    },
+    exteriorScene: {
+      ...base.exteriorScene,
+      ...(overrides.exteriorScene as Record<string, unknown> | undefined)
+    },
+    interiorSwatches: {
+      ...base.interiorSwatches,
+      ...(overrides.interiorSwatches as Record<string, unknown> | undefined)
+    },
+    layoutFloorplan: {
+      ...base.layoutFloorplan,
+      ...(overrides.layoutFloorplan as Record<string, unknown> | undefined)
+    },
+    gearScene: {
+      ...base.gearScene,
+      ...(overrides.gearScene as Record<string, unknown> | undefined)
+    }
+  };
+
+  return next;
 }
 
 async function installCustomerMocks(page: Page, streamedEvents: object[] = []) {
@@ -252,11 +306,10 @@ test("renders exterior updates with the larger wheel size and stays within a wid
 
   await expect(page.getByTestId("step-rail")).toContainText("Exterior spec");
   await expect(page.getByTestId("build-context-panel")).toContainText("Exterior direction");
-
-  const bodyFill = await page.locator(".van-canvas-body").getAttribute("fill");
-  const wheelRadius = await page.locator('circle[cx="206"][cy="252"]').first().getAttribute("r");
-  expect(bodyFill).toBe("#6c876f");
-  expect(wheelRadius).toBe("32");
+  await expect(page.locator(".van-canvas-body")).toHaveAttribute("fill", "#6c876f");
+  await expect(page.locator('circle[cx="206"][cy="252"]').first()).toHaveAttribute("r", "32");
+  const backgroundA = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--bg-a").trim());
+  expect(backgroundA).toBe("#dce8dc");
 
   const viewportCheck = await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight + 8);
   expect(viewportCheck).toBe(true);
@@ -299,7 +352,7 @@ test("renders interior swatches from the visual spec", async ({ page }) => {
   await page.goto("/customer.html");
   await page.getByRole("button", { name: "Let's talk" }).click();
 
-  await expect(page.getByTestId("build-context-panel")).toContainText("Interior materials");
+  await expect(page.getByTestId("build-context-panel")).toContainText("Material board");
   await expect(page.getByText("Warm birch")).toBeVisible();
   await expect(page.getByText("Matte linen")).toBeVisible();
   await expect(page.getByText("Weatherproof camel")).toBeVisible();
@@ -322,12 +375,20 @@ test("applies streamed visual spec updates for layout and gear", async ({ page }
       frontSeatConfig: "Swivel captain seats",
       notes: ["Right-hand drive", "Full galley", "Bike garage"],
       zones: [
-        { kind: "driver", x: 10, y: 0, w: 2, h: 2, label: "RHD cockpit", emphasis: "primary" },
-        { kind: "passenger", x: 8, y: 0, w: 2, h: 2, label: "Passenger seat", emphasis: "secondary" },
-        { kind: "galley", x: 6, y: 2, w: 4, h: 2, label: "Full galley", emphasis: "primary" },
-        { kind: "dinette", x: 2, y: 2, w: 4, h: 2, label: "Bench dinette", emphasis: "support" },
-        { kind: "storage", x: 0, y: 2, w: 4, h: 2, label: "Bike garage", emphasis: "secondary" },
-        { kind: "bed", x: 2, y: 4, w: 8, h: 2, label: "Murphy bed", emphasis: "primary" }
+        { kind: "driver", x: 10, y: 0, w: 2, h: 2, label: "RHD cockpit", shortLabel: "DR", emphasis: "primary" },
+        { kind: "passenger", x: 8, y: 0, w: 2, h: 2, label: "Passenger seat", shortLabel: "PS", emphasis: "secondary" },
+        { kind: "galley", x: 6, y: 2, w: 4, h: 2, label: "Full galley", shortLabel: "GA", emphasis: "primary" },
+        { kind: "dinette", x: 2, y: 2, w: 4, h: 2, label: "Bench dinette", shortLabel: "DN", emphasis: "support" },
+        { kind: "storage", x: 0, y: 2, w: 4, h: 2, label: "Bike garage", shortLabel: "ST", emphasis: "secondary" },
+        { kind: "bed", x: 2, y: 4, w: 8, h: 2, label: "Murphy bed", shortLabel: "BD", emphasis: "primary" }
+      ],
+      legend: [
+        { kind: "driver", label: "RHD cockpit", shortLabel: "DR", emphasis: "primary" },
+        { kind: "passenger", label: "Passenger seat", shortLabel: "PS", emphasis: "secondary" },
+        { kind: "galley", label: "Full galley", shortLabel: "GA", emphasis: "primary" },
+        { kind: "dinette", label: "Bench dinette", shortLabel: "DN", emphasis: "support" },
+        { kind: "storage", label: "Bike garage", shortLabel: "ST", emphasis: "secondary" },
+        { kind: "bed", label: "Murphy bed", shortLabel: "BD", emphasis: "primary" }
       ]
     },
     exteriorScene: {
@@ -376,10 +437,9 @@ test("applies streamed visual spec updates for layout and gear", async ({ page }
   await page.goto("/customer.html");
   await page.getByRole("button", { name: "Let's talk" }).click();
 
-  await expect(page.getByTestId("floorplan-zone-driver")).toContainText("RHD cockpit");
+  await expect(page.getByTestId("floorplan-zone-driver")).toContainText("DR");
+  await expect(page.getByTestId("layout-legend")).toContainText("RHD cockpit");
   await expect(page.getByTestId("build-context-panel")).toContainText("Layout plan");
-
-  await expect(page.getByTestId("build-context-panel")).toContainText("Gear systems");
-  await expect(page.getByText("Swing-out bike tray").first()).toBeVisible();
-  await expect(page.getByText("Perimeter camp lights").first()).toBeVisible();
+  await expect(page.getByTestId("build-context-panel")).not.toContainText("Systems + gear");
+  await expect(page.getByTestId("build-context-panel")).not.toContainText("Swing-out bike tray");
 });

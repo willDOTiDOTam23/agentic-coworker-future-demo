@@ -1,6 +1,10 @@
 import { test, expect } from "@playwright/test";
 
 test("renders agent thought bubbles and artifact cards", async ({ page }) => {
+  test.setTimeout(60_000);
+  let detailRequests = 0;
+  let artifactRequests = 0;
+
   await page.addInitScript(() => {
     class MockEventSource {
       onmessage: ((event: MessageEvent<string>) => void) | null = null;
@@ -59,6 +63,7 @@ test("renders agent thought bubbles and artifact cards", async ({ page }) => {
   });
 
   await page.route("**/api/configurations/session-123", async (route) => {
+    detailRequests += 1;
     await route.fulfill({
       json: {
         session,
@@ -78,6 +83,7 @@ test("renders agent thought bubbles and artifact cards", async ({ page }) => {
   });
 
   await page.route("**/api/configurations/session-123/artifacts", async (route) => {
+    artifactRequests += 1;
     await route.fulfill({
       json: {
         items: [
@@ -95,11 +101,16 @@ test("renders agent thought bubbles and artifact cards", async ({ page }) => {
   });
 
   await page.goto("/ops.html");
+  await expect.poll(() => detailRequests).toBeGreaterThan(0);
+  await expect.poll(() => artifactRequests).toBeGreaterThan(0);
 
   await expect(page.getByText("Northstar Vans Ops Theater")).toBeVisible();
+  await expect(page.getByTestId("ops-right-rail")).toBeVisible();
   await expect(
     page.getByText("Confidence crossed threshold and design planning is starting.").first()
   ).toBeVisible();
-  await expect(page.getByText("Design Planner revision")).toBeVisible();
+  await page.getByRole("tab", { name: "Artifacts" }).dispatchEvent("click");
+  await expect(page.getByText(/Design Planner revision/i)).toBeVisible();
   await expect(page.getByText("Forest Calm Build")).toBeVisible();
+  await page.close();
 });

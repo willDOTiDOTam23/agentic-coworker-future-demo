@@ -33,6 +33,8 @@ export type LayoutZoneKind =
 export interface VisualizationTheme {
   paletteName: string;
   backgroundLocked: boolean;
+  requestedExteriorColor: string;
+  resolvedExteriorColor: string;
   backgroundA: string;
   backgroundB: string;
   accent: string;
@@ -55,10 +57,13 @@ export interface VisionHighlights {
 }
 
 export interface ExteriorScene {
+  requestedColor: string;
+  renderColor: string;
   bodyColor: string;
   finish: string;
   wheelRadius: number;
   wheelStyle: string;
+  wheelVariant: "compact" | "touring" | "off-road";
   rackStyle: string;
   auxLights: string;
   powertrain: string;
@@ -68,6 +73,11 @@ export interface ExteriorScene {
   rearCarrier: string;
   ladder: boolean;
   campLighting: string;
+  showRack: boolean;
+  showAuxLights: boolean;
+  showRearCarrier: boolean;
+  showLadder: boolean;
+  suspensionLift: number;
   badges: string[];
   overlays: string[];
 }
@@ -88,6 +98,14 @@ export interface LayoutZone {
   w: number;
   h: number;
   label: string;
+  shortLabel: string;
+  emphasis: "primary" | "secondary" | "support";
+}
+
+export interface LayoutLegendItem {
+  kind: LayoutZoneKind;
+  label: string;
+  shortLabel: string;
   emphasis: "primary" | "secondary" | "support";
 }
 
@@ -98,6 +116,7 @@ export interface LayoutFloorplan {
   frontSeatConfig: string;
   notes: string[];
   zones: LayoutZone[];
+  legend: LayoutLegendItem[];
 }
 
 export interface GearModule {
@@ -113,6 +132,11 @@ export interface GearScene {
   ladder: boolean;
   powerModule: string;
   campLighting: string;
+  attachmentStates: Array<{
+    id: string;
+    label: string;
+    active: boolean;
+  }>;
   modules: GearModule[];
 }
 
@@ -213,4 +237,8 @@ export function getStepNumber(stepId: StepId): number {
 
 export function getStepLabel(stepId: StepId): string {
   return STEP_DEFINITIONS.find((step) => step.id === stepId)?.label ?? stepId;
+}
+
+export function getStepIdForNumber(stepNumber: number): StepId {
+  return STEP_DEFINITIONS[Math.min(Math.max(stepNumber - 1, 0), STEP_DEFINITIONS.length - 1)]?.id ?? "vision";
 }

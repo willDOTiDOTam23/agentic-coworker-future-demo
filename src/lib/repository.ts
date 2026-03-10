@@ -9,6 +9,7 @@ import {
   type VisualizationSpec,
   createDefaultConfigurationState,
   createDefaultTheme,
+  getStepIdForNumber,
   getStepNumber,
   type SessionStatus,
   type StepId,
@@ -41,6 +42,18 @@ function hydrateSession(row: Record<string, unknown>): ConfigurationSession {
     state: parseJson<ConfigurationState>(String(row.state_json), createDefaultConfigurationState()),
     latestConfidence: row.latest_confidence === null || row.latest_confidence === undefined ? null : Number(row.latest_confidence)
   };
+}
+
+export class StepSequenceError extends Error {
+  readonly expectedStep: StepId;
+  readonly receivedStep: StepId;
+
+  constructor(expectedStep: StepId, receivedStep: StepId) {
+    super(`Expected to save ${expectedStep} next, but received ${receivedStep}.`);
+    this.name = "StepSequenceError";
+    this.expectedStep = expectedStep;
+    this.receivedStep = receivedStep;
+  }
 }
 
 export class SqliteRepository {
@@ -215,6 +228,14 @@ export class SqliteRepository {
       throw new Error(`Session ${sessionId} not found.`);
     }
 
+    const activeStep = getStepIdForNumber(current.currentStep);
+    const incomingStepNumber = getStepNumber(input.step);
+    const activeStepNumber = getStepNumber(activeStep);
+
+    if (incomingStepNumber > activeStepNumber) {
+      throw new StepSequenceError(activeStep, input.step);
+    }
+
     const mergedState = {
       ...current.state,
       [input.step]: {
@@ -225,12 +246,19 @@ export class SqliteRepository {
 
     const mergedTheme = {
       ...current.theme,
-      visualTone: input.visualTone ?? current.theme.visualTone,
-      paletteChoice: input.paletteChoice ?? current.theme.paletteChoice
+      visualTone:
+        activeStep === "exterior" && input.step === "exterior"
+          ? input.visualTone ?? current.theme.visualTone
+          : current.theme.visualTone,
+      paletteChoice:
+        activeStep === "exterior" && input.step === "exterior"
+          ? input.paletteChoice ?? current.theme.paletteChoice
+          : current.theme.paletteChoice
     };
 
     const updatedAt = now();
-    const currentStep = Math.max(current.currentStep, getStepNumber(input.step));
+    const currentStep =
+      input.step === activeStep && current.currentStep < 5 ? current.currentStep + 1 : current.currentStep;
 
     this.db
       .prepare(

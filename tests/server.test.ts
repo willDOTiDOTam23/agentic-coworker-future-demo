@@ -61,7 +61,7 @@ describe("server API", () => {
       summary: "Customer wants a warm and quiet weekend escape van."
     }).expect(200);
 
-    expect(visionResponse.body.visualSpec.currentStep).toBe("vision");
+    expect(visionResponse.body.visualSpec.currentStep).toBe("exterior");
     expect(visionResponse.body.visualSpec.theme.backgroundLocked).toBe(false);
 
     const exteriorResponse = await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
@@ -76,9 +76,12 @@ describe("server API", () => {
       summary: "Customer prefers forest green with all-wheel drive."
     }).expect(200);
 
-    expect(exteriorResponse.body.visualSpec.currentStep).toBe("exterior");
+    expect(exteriorResponse.body.visualSpec.currentStep).toBe("interior");
     expect(exteriorResponse.body.visualSpec.theme.backgroundLocked).toBe(true);
+    expect(exteriorResponse.body.visualSpec.theme.requestedExteriorColor).toBe("Forest green");
+    expect(exteriorResponse.body.visualSpec.theme.resolvedExteriorColor).toBe("#6c876f");
     expect(exteriorResponse.body.visualSpec.exteriorScene.wheelRadius).toBe(32);
+    expect(exteriorResponse.body.visualSpec.exteriorScene.wheelVariant).toBe("off-road");
     const lockedBackground = {
       a: exteriorResponse.body.visualSpec.theme.backgroundA,
       b: exteriorResponse.body.visualSpec.theme.backgroundB
@@ -98,10 +101,11 @@ describe("server API", () => {
       summary: "Customer wants soft birch fixtures and warm woven materials."
     }).expect(200);
 
-    expect(interiorResponse.body.visualSpec.currentStep).toBe("interior");
+    expect(interiorResponse.body.visualSpec.currentStep).toBe("layout");
     expect(interiorResponse.body.visualSpec.theme.backgroundA).toBe(lockedBackground.a);
     expect(interiorResponse.body.visualSpec.theme.backgroundB).toBe(lockedBackground.b);
     expect(interiorResponse.body.visualSpec.interiorSwatches.fixtureColor).toBe("Warm birch");
+    expect(interiorResponse.body.visualSpec.layoutFloorplan.legend.length).toBeGreaterThanOrEqual(4);
 
     runtime.repository.createArtifact({
       sessionId: session.id,
@@ -140,9 +144,11 @@ describe("server API", () => {
 
     expect(runtime.queueRun).toHaveBeenCalledWith(session.id, "step:vision");
     expect(runtime.queueRun).toHaveBeenCalledWith(session.id, "step:exterior");
+    expect(runtime.queueRun).toHaveBeenCalledWith(session.id, "step:interior");
     expect(runtime.queueRun).toHaveBeenCalledWith(session.id, "submit");
     expect(runtime.queueVisualRun).toHaveBeenCalledWith(session.id, "step:vision");
     expect(runtime.queueVisualRun).toHaveBeenCalledWith(session.id, "step:exterior");
+    expect(runtime.queueVisualRun).toHaveBeenCalledWith(session.id, "step:interior");
     expect(runtime.queueVisualRun).toHaveBeenCalledWith(session.id, "submit");
 
     await request(runtime.app).post("/api/admin/reset").expect(200);
@@ -157,6 +163,28 @@ describe("server API", () => {
     const runtime = createTestRuntime();
     const response = await request(runtime.app).post("/api/realtime/session").expect(500);
     expect(response.body.error).toContain("OPENAI_API_KEY");
+    runtime.db.close();
+    fs.rmSync(runtime.tempDir, { recursive: true, force: true });
+  });
+
+  it("rejects out-of-sequence step saves with a clear 409 error", async () => {
+    const runtime = createTestRuntime();
+    const session = runtime.repository.createSession("session-out-of-sequence");
+
+    const response = await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
+      step: "layout",
+      values: {
+        layoutFloorplan: {
+          driveSide: "left-hand drive"
+        }
+      },
+      summary: "Customer jumped ahead to layout."
+    }).expect(409);
+
+    expect(response.body.error).toContain("Expected to save vision next");
+    expect(response.body.expectedStep).toBe("vision");
+    expect(response.body.receivedStep).toBe("layout");
+
     runtime.db.close();
     fs.rmSync(runtime.tempDir, { recursive: true, force: true });
   });

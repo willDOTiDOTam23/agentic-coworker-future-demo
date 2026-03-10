@@ -1,7 +1,7 @@
 import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { ConfigurationSession, VisualizationSpec } from "../../lib/domain.js";
-import { STEP_DEFINITIONS } from "../../lib/domain.js";
+import { getStepIdForNumber, getStepLabel, STEP_DEFINITIONS } from "../../lib/domain.js";
 import { SaveConfigurationStepSchema } from "../../lib/schemas.js";
 import { createRealtimeSession, getConfiguration, saveConfigurationStep, submitConfiguration } from "../shared/api.js";
 import { derivePalette } from "../shared/palette.js";
@@ -204,12 +204,18 @@ function App() {
         const result = await saveConfigurationStep(sessionId, validated);
         applySession(result.session);
         applyVisualSpec(result.visualSpec);
+        const nextStepId = getStepIdForNumber(result.session.currentStep);
         output = {
           ok: true,
           currentStep: result.session.currentStep,
+          nextStep: nextStepId,
           status: result.session.status
         };
-        setStatusCopy(`Saved ${validated.step}.`);
+        setStatusCopy(
+          validated.step === "gear"
+            ? "Saved gear review."
+            : `Saved ${validated.step}. Next: ${getStepLabel(nextStepId)}.`
+        );
       }
 
       if (toolName === "submit_configuration") {
@@ -465,7 +471,7 @@ function App() {
                 <div className="build-panel-meta">{session?.status === "submitted" ? "Sent to ops" : currentStepLabel}</div>
               </div>
             </div>
-            <VanAssembly session={session} visualSpec={visualSpec} />
+            <VanAssembly session={session} visualSpec={visualSpec} activeStep={getStepIdForNumber(currentStepNumber)} />
           </div>
         </div>
       </div>

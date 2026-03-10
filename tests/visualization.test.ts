@@ -66,9 +66,13 @@ describe("deriveVisualizationSpec", () => {
     expect(() => VisualizationSpecSchema.parse(spec)).not.toThrow();
     expect(spec.currentStep).toBe("layout");
     expect(spec.theme.backgroundLocked).toBe(true);
+    expect(spec.theme.requestedExteriorColor).toBe("Storm blue");
+    expect(spec.theme.resolvedExteriorColor).toBe("#56788f");
     expect(spec.exteriorScene.wheelRadius).toBe(32);
+    expect(spec.exteriorScene.wheelVariant).toBe("off-road");
     expect(spec.layoutFloorplan.driveSide).toBe("right");
     expect(spec.layoutFloorplan.zones.some((zone) => zone.kind === "driver")).toBe(true);
+    expect(spec.layoutFloorplan.legend.every((item) => item.shortLabel.length <= 3)).toBe(true);
     expect(spec.gearScene.modules.some((module) => module.id === "power-module")).toBe(true);
   });
 
@@ -102,5 +106,30 @@ describe("deriveVisualizationSpec", () => {
     expect(lockedSpec.theme.backgroundLocked).toBe(true);
     expect(laterSpec.theme.backgroundA).toBe(lockedSpec.theme.backgroundA);
     expect(laterSpec.theme.backgroundB).toBe(lockedSpec.theme.backgroundB);
+    expect(laterSpec.theme.resolvedExteriorColor).toBe(lockedSpec.theme.resolvedExteriorColor);
+  });
+
+  it("maps common spoken exterior colors into a renderable palette", () => {
+    const spec = deriveVisualizationSpec(
+      createSession({
+        currentStep: 2,
+        state: {
+          vision: {},
+          exterior: {
+            exteriorColor: "sage green",
+            wheelStyle: "city wheel"
+          },
+          interior: {},
+          layout: {},
+          gear: {}
+        }
+      })
+    );
+
+    expect(spec.theme.backgroundLocked).toBe(true);
+    expect(spec.theme.requestedExteriorColor).toBe("sage green");
+    expect(spec.theme.resolvedExteriorColor).toBe("#6c876f");
+    expect(spec.exteriorScene.renderColor).toBe("#6c876f");
+    expect(spec.exteriorScene.wheelVariant).toBe("compact");
   });
 });

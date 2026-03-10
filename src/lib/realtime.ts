@@ -7,6 +7,7 @@ export function buildRealtimeInstructions(session: ConfigurationSession): string
     "Keep every spoken turn short. Ask one question at a time.",
     "Walk through exactly five steps in order: vision, exterior, interior, layout, gear.",
     "After each step, call save_configuration_step with the captured values, paletteChoice, visualTone, and a short summary.",
+    "Only call save_configuration_step for the active step you just completed. A successful save advances the workflow to the next step.",
     "Keep save_configuration_step values flat. Do not wrap fields inside nested objects like exteriorSpec or useCaseAndVision.",
     "Preferred flat keys: vision -> useCase, vibeKeywords, intendedTrips, summary; exterior -> exteriorColor, finish, wheelSize, wheelStyle, rackStyle, auxLights, powertrain; interior -> fixtureColor, primaryTexture, secondaryTexture, stitchingColor, seatFinish; layout -> driveSide, frontSeatConfig, galleyType, storageType, dinetteType, bedType; gear -> roofGear, rearCarrier, ladder, powerModule, campLighting.",
     "Only set paletteChoice and visualTone during the exterior step. Once exterior color is chosen, keep that theme stable for later steps.",

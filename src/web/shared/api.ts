@@ -10,7 +10,12 @@ import type { SaveConfigurationStepInput } from "../../lib/schemas.js";
 async function parseJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const body = await response.text();
-    throw new Error(body || `Request failed with status ${response.status}`);
+    try {
+      const parsed = JSON.parse(body) as { error?: string };
+      throw new Error(parsed.error || `Request failed with status ${response.status}`);
+    } catch {
+      throw new Error(body || `Request failed with status ${response.status}`);
+    }
   }
 
   return response.json() as Promise<T>;
