@@ -47,8 +47,10 @@ describe("server API", () => {
     await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
       step: "vision",
       values: {
-        useCase: "Weekend escapes",
-        vibe: "Warm and quiet"
+        useCaseAndVision: {
+          useCase: "Weekend escapes",
+          vibeKeywords: ["Warm", "quiet"]
+        }
       },
       paletteChoice: "Forest Calm",
       visualTone: "Quiet expedition",
@@ -58,8 +60,10 @@ describe("server API", () => {
     await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
       step: "exterior",
       values: {
-        exteriorColor: "Forest green",
-        powerPreference: "All-wheel drive"
+        exteriorSpec: {
+          exteriorColor: "Forest green",
+          powerPreference: "All-wheel drive"
+        }
       },
       summary: "Customer prefers forest green with all-wheel drive."
     }).expect(200);
@@ -82,6 +86,8 @@ describe("server API", () => {
     const detailResponse = await request(runtime.app).get(`/api/configurations/${session.id}`).expect(200);
     expect(detailResponse.body.session.status).toBe("submitted");
     expect(detailResponse.body.session.currentStep).toBe(5);
+    expect(detailResponse.body.session.state.vision.useCase).toBe("Weekend escapes");
+    expect(detailResponse.body.session.state.exterior.exteriorColor).toBe("Forest green");
     expect(detailResponse.body.turns[0].text).toContain("Configuration submitted");
 
     const listResponse = await request(runtime.app).get("/api/configurations").expect(200);

@@ -11,7 +11,67 @@ export const ConfigValueSchema = z.union([
   z.null()
 ]);
 
-export const ConfigurationValuesSchema = z.record(z.string(), ConfigValueSchema);
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function normalizeScalar(value: unknown): z.infer<typeof ConfigValueSchema> | undefined {
+  if (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    const normalizedItems = value
+      .map((item) => {
+        if (item === null || item === undefined) return null;
+        if (typeof item === "string") return item.trim();
+        if (typeof item === "number" || typeof item === "boolean") return String(item);
+        return null;
+      })
+      .filter((item): item is string => Boolean(item));
+
+    return normalizedItems.length > 0 ? normalizedItems : undefined;
+  }
+
+  return undefined;
+}
+
+export function normalizeConfigurationValues(input: unknown): Record<string, z.infer<typeof ConfigValueSchema>> {
+  if (!isPlainObject(input)) {
+    return {};
+  }
+
+  const normalized: Record<string, z.infer<typeof ConfigValueSchema>> = {};
+
+  const visit = (value: Record<string, unknown>) => {
+    for (const [key, nestedValue] of Object.entries(value)) {
+      if (!key) continue;
+
+      const normalizedScalar = normalizeScalar(nestedValue);
+      if (normalizedScalar !== undefined) {
+        normalized[key] = normalizedScalar;
+        continue;
+      }
+
+      if (isPlainObject(nestedValue)) {
+        visit(nestedValue);
+      }
+    }
+  };
+
+  visit(input);
+  return normalized;
+}
+
+export const ConfigurationValuesSchema = z.preprocess(
+  (input) => normalizeConfigurationValues(input),
+  z.record(z.string(), ConfigValueSchema)
+);
 
 export const SaveConfigurationStepSchema = z.object({
   step: StepIdSchema,

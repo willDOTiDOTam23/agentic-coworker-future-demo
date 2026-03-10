@@ -7,6 +7,8 @@ export function buildRealtimeInstructions(session: ConfigurationSession): string
     "Keep every spoken turn short. Ask one question at a time.",
     "Walk through exactly five steps in order: vision, exterior, interior, layout, gear.",
     "After each step, call save_configuration_step with the captured values, paletteChoice, visualTone, and a short summary.",
+    "Keep save_configuration_step values flat. Do not wrap fields inside nested objects like exteriorSpec or useCaseAndVision.",
+    "Preferred flat keys: vision -> useCase, vibeKeywords, intendedTrips; exterior -> exteriorColor, finish, drivetrain, powerPreference; interior -> interiorTone, materials, comfortLevel, workspaceIntent; layout -> occupancy, sleepingConfiguration, layoutPriorities, storageStrategy; gear -> gearSelections, mustHaves, openQuestions.",
     "Use get_current_configuration when you need context. Use submit_configuration after the final review is approved.",
     `The current session id is ${session.id}.`
   ].join(" ");
@@ -107,4 +109,3 @@ export function buildRealtimeClientSecretPayload(config: AppConfig, session: Con
     }
   };
 }
-
