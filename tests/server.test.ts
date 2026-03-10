@@ -288,4 +288,21 @@ describe("server API", () => {
     runtime.db.close();
     fs.rmSync(runtime.tempDir, { recursive: true, force: true });
   });
+
+  it("retains only a small rolling set of demo sessions", async () => {
+    const runtime = createTestRuntime();
+
+    runtime.repository.createSession("session-1");
+    runtime.repository.createSession("session-2");
+    runtime.repository.createSession("session-3");
+    runtime.repository.createSession("session-4");
+    runtime.repository.createSession("session-5");
+
+    const sessions = runtime.repository.listSessions();
+    expect(sessions).toHaveLength(3);
+    expect(sessions.map((session) => session.id)).toEqual(["session-5", "session-4", "session-3"]);
+
+    runtime.db.close();
+    fs.rmSync(runtime.tempDir, { recursive: true, force: true });
+  });
 });

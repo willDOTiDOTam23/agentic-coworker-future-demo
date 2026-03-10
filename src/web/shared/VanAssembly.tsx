@@ -4,6 +4,7 @@ interface VanAssemblyProps {
   session?: ConfigurationSession | null;
   visualSpec?: VisualizationSpec | null;
   activeStep?: StepId;
+  onSelectStep?: (step: StepId) => void;
 }
 
 const FALLBACK_SPEC: VisualizationSpec = {
@@ -386,7 +387,7 @@ function renderLayoutOverlay(spec: VisualizationSpec) {
   );
 }
 
-export function VanAssembly({ session, visualSpec, activeStep }: VanAssemblyProps) {
+export function VanAssembly({ session, visualSpec, activeStep, onSelectStep }: VanAssemblyProps) {
   const spec = visualSpec ?? FALLBACK_SPEC;
   const displayStep = activeStep ?? displayStepFromSession(session) ?? spec.currentStep;
   const stepRail = renderStepRail(session, spec.stepRail);
@@ -401,12 +402,21 @@ export function VanAssembly({ session, visualSpec, activeStep }: VanAssemblyProp
     <div className="build-stage">
       <div className="step-rail" data-testid="step-rail">
         {stepRail.map((step) => (
-          <div key={step.step} className={`step-pill ${step.state}`}>
+          <button
+            key={step.step}
+            type="button"
+            className={`step-pill ${step.state} ${displayStep === step.step ? "selected" : ""} ${
+              step.state !== "upcoming" ? "clickable" : ""
+            }`.trim()}
+            disabled={step.state === "upcoming"}
+            aria-pressed={displayStep === step.step}
+            onClick={() => onSelectStep?.(step.step)}
+          >
             <span className="step-pill-number">
               {STEP_DEFINITIONS.findIndex((item) => item.id === step.step) + 1}
             </span>
             <span className="step-pill-label">{step.label}</span>
-          </div>
+          </button>
         ))}
       </div>
 

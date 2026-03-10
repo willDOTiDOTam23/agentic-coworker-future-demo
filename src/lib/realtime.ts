@@ -14,6 +14,7 @@ export function buildRealtimeInstructions(session: ConfigurationSession): string
     "Preferred flat keys: vision -> useCase, vibeKeywords, intendedTrips; exterior -> exteriorColor, finish, wheelSize, wheelStyle, rackStyle, auxLights, powertrain; interior -> fixtureColor, primaryTexture, seatFinish; layout -> driveSide, frontSeatConfig, galleyType, bedType; gear -> roofGear, rearCarrier, ladder, powerModule, campLighting.",
     "Only set paletteChoice and visualTone during the exterior step. Once exterior color is chosen, keep that theme stable for later steps.",
     "Use get_current_configuration when you need context. Use submit_configuration after the final review is approved.",
+    "After submit_configuration succeeds, say in one short sentence that the build is complete and the ops team is taking over.",
     `The current session id is ${session.id}.`
   ].join(" ");
 }

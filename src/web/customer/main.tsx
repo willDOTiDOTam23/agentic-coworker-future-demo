@@ -1,6 +1,6 @@
 import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { ConfigurationSession, VisualizationSpec } from "../../lib/domain.js";
+import type { ConfigurationSession, StepId, VisualizationSpec } from "../../lib/domain.js";
 import { getStepIdForNumber, getStepLabel, STEP_DEFINITIONS } from "../../lib/domain.js";
 import { SaveConfigurationStepSchema } from "../../lib/schemas.js";
 import { createRealtimeSession, getConfiguration, saveConfigurationStep, submitConfiguration } from "../shared/api.js";
@@ -65,6 +65,7 @@ function App() {
   const [statusCopy, setStatusCopy] = useState("Ready when you are.");
   const [session, setSession] = useState<ConfigurationSession | null>(null);
   const [visualSpec, setVisualSpec] = useState<VisualizationSpec | null>(null);
+  const [selectedDisplayStep, setSelectedDisplayStep] = useState<StepId | null>(null);
   const [customerWave, setCustomerWave] = useState<number[]>(emptyWaveform());
   const [assistantWave, setAssistantWave] = useState<number[]>(emptyWaveform());
 
@@ -192,6 +193,7 @@ function App() {
         applyVisualSpec(result.visualSpec);
         output = {
           ok: true,
+          done: true,
           status: result.session.status
         };
         setStatusCopy("Build sent to ops.");
@@ -213,6 +215,15 @@ function App() {
         status: "completed"
       }
     });
+
+    if (toolName === "submit_configuration") {
+      requestModelResponse({
+        instructions:
+          "In one short sentence, tell the customer the build is complete and the ops team is taking over now."
+      });
+      return;
+    }
+
     requestModelResponse();
   });
 
@@ -344,6 +355,10 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    setSelectedDisplayStep(null);
+  }, [session?.currentStep, session?.status]);
+
   const palette = derivePalette(session, visualSpec);
 
   useEffect(() => {
@@ -358,6 +373,7 @@ function App() {
   }, [palette]);
 
   const currentStepNumber = Math.min(Math.max(session?.currentStep ?? 1, 1), STEP_DEFINITIONS.length);
+  const currentStepId = getStepIdForNumber(currentStepNumber);
   const currentStepLabel =
     session?.status === "submitted" ? "Submitted" : STEP_DEFINITIONS[currentStepNumber - 1]?.label ?? STEP_DEFINITIONS[0].label;
 
@@ -411,7 +427,12 @@ function App() {
                 <div className="build-panel-meta">{session?.status === "submitted" ? "Sent to ops" : currentStepLabel}</div>
               </div>
             </div>
-            <VanAssembly session={session} visualSpec={visualSpec} activeStep={getStepIdForNumber(currentStepNumber)} />
+            <VanAssembly
+              session={session}
+              visualSpec={visualSpec}
+              activeStep={selectedDisplayStep ?? currentStepId}
+              onSelectStep={setSelectedDisplayStep}
+            />
           </div>
         </div>
       </div>

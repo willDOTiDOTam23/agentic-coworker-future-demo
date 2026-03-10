@@ -358,6 +358,44 @@ test("renders interior swatches from the visual spec", async ({ page }) => {
   await expect(page.getByText("Weatherproof camel")).toBeVisible();
 });
 
+test("lets the customer reopen completed build steps from the step rail", async ({ page }) => {
+  const visualSpec = buildVisualSpec({
+    currentStep: "layout",
+    stepRail: [
+      { step: "vision", label: "Vision and use case", state: "complete" },
+      { step: "exterior", label: "Exterior spec", state: "complete" },
+      { step: "interior", label: "Interior spec", state: "complete" },
+      { step: "layout", label: "Layout and sleeping", state: "current" },
+      { step: "gear", label: "Gear, review, and submit", state: "upcoming" }
+    ]
+  });
+  const session = buildSession(4, {
+    exterior: { exteriorColor: "Forest green" },
+    interior: { fixtureColor: "Warm birch" },
+    layout: { driveSide: "left-hand drive" }
+  });
+
+  await installCustomerMocks(page);
+  await page.route(`**/api/configurations/${sessionId}`, async (route) => {
+    await route.fulfill({
+      json: {
+        session,
+        turns: [],
+        agentEvents: [],
+        visualSpec
+      }
+    });
+  });
+
+  await page.goto("/customer.html");
+  await page.getByRole("button", { name: "Let's talk" }).click();
+
+  await expect(page.getByTestId("build-context-panel")).toContainText("Layout plan");
+  await page.getByRole("button", { name: /Exterior spec/i }).click();
+  await expect(page.getByTestId("build-context-panel")).toContainText("Exterior direction");
+  await expect(page.getByRole("button", { name: /Exterior spec/i })).toHaveAttribute("aria-pressed", "true");
+});
+
 test("applies streamed visual spec updates for layout and gear", async ({ page }) => {
   const initialVisualSpec = buildVisualSpec({
     currentStep: "layout",

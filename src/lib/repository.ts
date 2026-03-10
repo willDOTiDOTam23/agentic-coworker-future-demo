@@ -23,6 +23,8 @@ function now(): string {
   return new Date().toISOString();
 }
 
+const MAX_RETAINED_DEMO_SESSIONS = 3;
+
 function parseJson<T>(value: string, fallback: T): T {
   try {
     return JSON.parse(value) as T;
@@ -69,6 +71,26 @@ export class StepCaptureError extends Error {
 
 export class SqliteRepository {
   constructor(private readonly db: Database) {}
+
+  private pruneSessionHistory(limit = MAX_RETAINED_DEMO_SESSIONS) {
+    const staleRows = this.db
+      .prepare(
+        `
+          SELECT id
+          FROM config_sessions
+          ORDER BY rowid DESC
+          LIMIT -1 OFFSET ?
+        `
+      )
+      .all(limit) as Array<{ id: string }>;
+
+    for (const row of staleRows) {
+      this.db.prepare("DELETE FROM artifacts WHERE session_id = ?").run(row.id);
+      this.db.prepare("DELETE FROM agent_events WHERE session_id = ?").run(row.id);
+      this.db.prepare("DELETE FROM conversation_turns WHERE session_id = ?").run(row.id);
+      this.db.prepare("DELETE FROM config_sessions WHERE id = ?").run(row.id);
+    }
+  }
 
   private recoverStateFromTurns(session: ConfigurationSession): ConfigurationSession {
     const rows = this.db
@@ -189,6 +211,7 @@ export class SqliteRepository {
     };
 
     this.persistVisualSpec(sessionId, deriveVisualizationSpec(session));
+    this.pruneSessionHistory();
 
     return session;
   }
@@ -287,7 +310,7 @@ export class SqliteRepository {
           LEFT JOIN artifacts a ON a.session_id = s.id
           LEFT JOIN agent_events e ON e.session_id = s.id
           GROUP BY s.id
-          ORDER BY s.updated_at DESC
+          ORDER BY s.updated_at DESC, s.rowid DESC
         `
       )
       .all() as Record<string, unknown>[];

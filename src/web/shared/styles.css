@@ -394,10 +394,14 @@ input {
 .step-pill {
   display: grid;
   gap: 4px;
+  width: 100%;
   padding: 8px 10px;
   border-radius: 18px;
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.46);
+  text-align: left;
+  appearance: none;
+  color: inherit;
 }
 
 .step-pill.current {
@@ -406,8 +410,27 @@ input {
   box-shadow: 0 10px 24px rgba(24, 33, 37, 0.08);
 }
 
+.step-pill.selected {
+  border-color: rgba(24, 33, 37, 0.22);
+  box-shadow: 0 12px 26px rgba(24, 33, 37, 0.1);
+}
+
 .step-pill.complete {
   background: rgba(255, 255, 255, 0.64);
+}
+
+.step-pill.clickable {
+  cursor: pointer;
+}
+
+.step-pill.clickable:hover,
+.step-pill.clickable:focus-visible {
+  background: rgba(255, 255, 255, 0.84);
+  border-color: rgba(24, 33, 37, 0.18);
+}
+
+.step-pill:disabled {
+  cursor: default;
 }
 
 .step-pill-number {
