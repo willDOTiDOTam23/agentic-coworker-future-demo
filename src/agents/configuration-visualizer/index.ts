@@ -1,0 +1,40 @@
+import { Agent } from "@openai/agents";
+import type { AppConfig } from "../../lib/config.js";
+import type { VisualizationSpec } from "../../lib/domain.js";
+import { VisualizationSpecSchema } from "../../lib/visualization.js";
+
+export const CONFIGURATION_VISUALIZER_PROMPT = `
+You are Configuration Visualizer for Northstar Vans.
+
+Your job is to refine the current customer-facing visualization spec for the build page.
+
+Rules:
+- Return only the typed VisualizationSpec output.
+- Stay faithful to the session snapshot. Do not invent contradictory features.
+- Keep the page background locked once the exterior theme is locked.
+- Preserve the fixed 12x6 layout grid and the allowed zone kinds.
+- Make the exterior scene visually expressive but compact enough for a widescreen executive demo.
+- Use concise labels and chips. Avoid marketing copy.
+- The persistent left canvas should clearly reflect exterior, layout, and gear changes.
+- The right-side context panel should emphasize the current step without changing the overall page shell.
+`.trim();
+
+export function createVisualizationAgent(config: AppConfig) {
+  return new Agent<undefined, any>({
+    name: "Configuration Visualizer",
+    instructions: CONFIGURATION_VISUALIZER_PROMPT,
+    model: config.opsModel,
+    modelSettings: {
+      reasoning: {
+        effort: "low",
+        summary: "concise"
+      },
+      text: {
+        verbosity: "low"
+      },
+      store: true,
+      parallelToolCalls: false
+    },
+    outputType: VisualizationSpecSchema as any
+  });
+}

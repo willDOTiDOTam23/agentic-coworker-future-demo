@@ -20,6 +20,115 @@ export interface ThemeState {
   visualTone: string;
 }
 
+export type LayoutZoneKind =
+  | "driver"
+  | "passenger"
+  | "galley"
+  | "storage"
+  | "dinette"
+  | "bed"
+  | "bath"
+  | "utility";
+
+export interface VisualizationTheme {
+  paletteName: string;
+  backgroundLocked: boolean;
+  backgroundA: string;
+  backgroundB: string;
+  accent: string;
+  accentAlt: string;
+  ink: string;
+  bodyColor: string;
+  cabinColor: string;
+}
+
+export interface StepRailItem {
+  step: StepId;
+  label: string;
+  state: "complete" | "current" | "upcoming";
+}
+
+export interface VisionHighlights {
+  title: string;
+  summary: string;
+  chips: string[];
+}
+
+export interface ExteriorScene {
+  bodyColor: string;
+  finish: string;
+  wheelRadius: number;
+  wheelStyle: string;
+  rackStyle: string;
+  auxLights: string;
+  powertrain: string;
+  driveSide: "left" | "right";
+  frontSeatConfig: string;
+  roofGear: string;
+  rearCarrier: string;
+  ladder: boolean;
+  campLighting: string;
+  badges: string[];
+  overlays: string[];
+}
+
+export interface InteriorSwatches {
+  fixtureColor: string;
+  primaryTexture: string;
+  secondaryTexture: string;
+  stitchingColor: string;
+  seatFinish: string;
+  notes: string[];
+}
+
+export interface LayoutZone {
+  kind: LayoutZoneKind;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  label: string;
+  emphasis: "primary" | "secondary" | "support";
+}
+
+export interface LayoutFloorplan {
+  gridColumns: number;
+  gridRows: number;
+  driveSide: "left" | "right";
+  frontSeatConfig: string;
+  notes: string[];
+  zones: LayoutZone[];
+}
+
+export interface GearModule {
+  id: string;
+  label: string;
+  detail: string;
+  status: "active" | "optional" | "inactive";
+}
+
+export interface GearScene {
+  roofGear: string;
+  rearCarrier: string;
+  ladder: boolean;
+  powerModule: string;
+  campLighting: string;
+  modules: GearModule[];
+}
+
+export interface VisualizationSpec {
+  generatedBy: "deterministic" | "agent";
+  updatedAt: string;
+  currentStep: StepId;
+  theme: VisualizationTheme;
+  stepRail: StepRailItem[];
+  visionHighlights: VisionHighlights;
+  exteriorScene: ExteriorScene;
+  interiorSwatches: InteriorSwatches;
+  layoutFloorplan: LayoutFloorplan;
+  gearScene: GearScene;
+}
+
 export interface ConfigurationState {
   vision: ConfigurationValues;
   exterior: ConfigurationValues;
@@ -73,6 +182,7 @@ export interface ConfigurationDetail {
   session: ConfigurationSession;
   turns: ConversationTurn[];
   agentEvents: AgentEvent[];
+  visualSpec: VisualizationSpec;
 }
 
 export interface ConfigurationListItem extends ConfigurationSession {
@@ -104,4 +214,3 @@ export function getStepNumber(stepId: StepId): number {
 export function getStepLabel(stepId: StepId): string {
   return STEP_DEFINITIONS.find((step) => step.id === stepId)?.label ?? stepId;
 }
-

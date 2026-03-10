@@ -2,6 +2,15 @@ import Database from "better-sqlite3";
 
 export type AppDatabase = Database.Database;
 
+function ensureColumn(db: AppDatabase, tableName: string, columnName: string, sqlType: string) {
+  const columns = db.prepare(`PRAGMA table_info(${tableName})`).all() as Array<{ name: string }>;
+  if (columns.some((column) => column.name === columnName)) {
+    return;
+  }
+
+  db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${sqlType};`);
+}
+
 export function createDatabase(databasePath: string): AppDatabase {
   const db = new Database(databasePath);
   db.pragma("journal_mode = WAL");
@@ -14,6 +23,8 @@ export function createDatabase(databasePath: string): AppDatabase {
       current_step INTEGER NOT NULL,
       state_json TEXT NOT NULL,
       theme_json TEXT NOT NULL,
+      visual_spec_json TEXT,
+      visual_updated_at TEXT,
       latest_confidence REAL,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
@@ -53,6 +64,8 @@ export function createDatabase(databasePath: string): AppDatabase {
     );
   `);
 
+  ensureColumn(db, "config_sessions", "visual_spec_json", "TEXT");
+  ensureColumn(db, "config_sessions", "visual_updated_at", "TEXT");
+
   return db;
 }
-

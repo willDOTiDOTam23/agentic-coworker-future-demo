@@ -1,4 +1,10 @@
-import type { ArtifactRecord, ConfigurationDetail, ConfigurationListItem, ConfigurationSession } from "../../lib/domain.js";
+import type {
+  ArtifactRecord,
+  ConfigurationDetail,
+  ConfigurationListItem,
+  ConfigurationSession,
+  VisualizationSpec
+} from "../../lib/domain.js";
 import type { SaveConfigurationStepInput } from "../../lib/schemas.js";
 
 async function parseJson<T>(response: Response): Promise<T> {
@@ -49,7 +55,7 @@ export async function saveConfigurationStep(sessionId: string, payload: SaveConf
     body: JSON.stringify(payload)
   });
 
-  return parseJson<{ session: ConfigurationSession }>(response);
+  return parseJson<{ session: ConfigurationSession; visualSpec: VisualizationSpec }>(response);
 }
 
 export async function submitConfiguration(sessionId: string) {
@@ -57,7 +63,7 @@ export async function submitConfiguration(sessionId: string) {
     method: "POST"
   });
 
-  return parseJson<{ session: ConfigurationSession }>(response);
+  return parseJson<{ session: ConfigurationSession; visualSpec: VisualizationSpec }>(response);
 }
 
 export async function resetDemo() {
@@ -67,4 +73,3 @@ export async function resetDemo() {
 
   return parseJson<{ ok: true }>(response);
 }
-

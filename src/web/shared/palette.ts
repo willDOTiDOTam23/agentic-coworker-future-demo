@@ -1,4 +1,4 @@
-import type { ConfigurationSession } from "../../lib/domain.js";
+import type { ConfigurationSession, VisualizationSpec } from "../../lib/domain.js";
 
 export interface DerivedPalette {
   accent: string;
@@ -62,20 +62,34 @@ const paletteLibrary = [
 ] as const;
 
 const defaultPalette: DerivedPalette = {
-  accent: "#d97757",
-  accentAlt: "#26667f",
-  backgroundA: "#efe7db",
-  backgroundB: "#d9d5ca",
-  bodyColor: "#c8b29b",
-  cabinColor: "#f5f1ec",
+  accent: "#cf7b3f",
+  accentAlt: "#3f7288",
+  backgroundA: "#f7e6c7",
+  backgroundB: "#ebd7a4",
+  bodyColor: "#d7b892",
+  cabinColor: "#f7f1e8",
   ink: "#182125"
 };
 
-export function derivePalette(session?: ConfigurationSession | null): DerivedPalette {
+export function derivePalette(
+  session?: ConfigurationSession | null,
+  visualSpec?: VisualizationSpec | null
+): DerivedPalette {
+  if (visualSpec) {
+    return {
+      accent: visualSpec.theme.accent,
+      accentAlt: visualSpec.theme.accentAlt,
+      backgroundA: visualSpec.theme.backgroundA,
+      backgroundB: visualSpec.theme.backgroundB,
+      bodyColor: visualSpec.theme.bodyColor,
+      cabinColor: visualSpec.theme.cabinColor,
+      ink: visualSpec.theme.ink
+    };
+  }
+
   const seed = `${session?.theme.paletteChoice ?? ""} ${session?.theme.visualTone ?? ""} ${
     String(session?.state.exterior.color ?? session?.state.exterior.exteriorColor ?? "")
   }`;
   const match = paletteLibrary.find((candidate) => candidate.match.test(seed));
   return match?.palette ?? defaultPalette;
 }
-

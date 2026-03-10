@@ -10,9 +10,15 @@ describe("generated agent docs", () => {
     expect(rootDoc).toContain("## Agent Graph");
     expect(rootDoc).toContain("OPENAI_REASONING_EFFORT");
     expect(rootDoc).toContain("Session Monitor -> Design Planner when confidence_score >= 0.80");
+    expect(rootDoc).toContain("Configuration Visualizer");
+    expect(rootDoc).toContain("visual_spec_updated");
   });
 
   it("writes per-agent documentation files", () => {
+    const visualizerDoc = fs.readFileSync(
+      path.join(repoRoot, "src/agents/configuration-visualizer/agents.md"),
+      "utf8"
+    );
     const sessionMonitorDoc = fs.readFileSync(
       path.join(repoRoot, "src/agents/session-monitor/agents.md"),
       "utf8"
@@ -26,6 +32,7 @@ describe("generated agent docs", () => {
       "utf8"
     );
 
+    expect(visualizerDoc).toContain("VisualizationSpec");
     expect(sessionMonitorDoc).toContain("## Tool Definitions");
     expect(designPlannerDoc).toContain("persist_design_brief");
     expect(supplyDoc).toContain("Supply Orchestrator");
@@ -37,4 +44,3 @@ describe("generated agent docs", () => {
     expect(playbook).toContain("## Repository Norms");
   });
 });
-

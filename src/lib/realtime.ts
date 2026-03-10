@@ -8,7 +8,8 @@ export function buildRealtimeInstructions(session: ConfigurationSession): string
     "Walk through exactly five steps in order: vision, exterior, interior, layout, gear.",
     "After each step, call save_configuration_step with the captured values, paletteChoice, visualTone, and a short summary.",
     "Keep save_configuration_step values flat. Do not wrap fields inside nested objects like exteriorSpec or useCaseAndVision.",
-    "Preferred flat keys: vision -> useCase, vibeKeywords, intendedTrips; exterior -> exteriorColor, finish, drivetrain, powerPreference; interior -> interiorTone, materials, comfortLevel, workspaceIntent; layout -> occupancy, sleepingConfiguration, layoutPriorities, storageStrategy; gear -> gearSelections, mustHaves, openQuestions.",
+    "Preferred flat keys: vision -> useCase, vibeKeywords, intendedTrips, summary; exterior -> exteriorColor, finish, wheelSize, wheelStyle, rackStyle, auxLights, powertrain; interior -> fixtureColor, primaryTexture, secondaryTexture, stitchingColor, seatFinish; layout -> driveSide, frontSeatConfig, galleyType, storageType, dinetteType, bedType; gear -> roofGear, rearCarrier, ladder, powerModule, campLighting.",
+    "Only set paletteChoice and visualTone during the exterior step. Once exterior color is chosen, keep that theme stable for later steps.",
     "Use get_current_configuration when you need context. Use submit_configuration after the final review is approved.",
     `The current session id is ${session.id}.`
   ].join(" ");

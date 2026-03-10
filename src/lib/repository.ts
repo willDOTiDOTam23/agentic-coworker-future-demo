@@ -6,6 +6,7 @@ import {
   type ConfigurationListItem,
   type ConfigurationSession,
   type ConfigurationState,
+  type VisualizationSpec,
   createDefaultConfigurationState,
   createDefaultTheme,
   getStepNumber,
@@ -14,6 +15,7 @@ import {
   type ThemeState
 } from "./domain.js";
 import type { SaveConfigurationStepInput } from "./schemas.js";
+import { deriveVisualizationSpec, VisualizationSpecSchema } from "./visualization.js";
 
 function now(): string {
   return new Date().toISOString();
@@ -44,6 +46,25 @@ function hydrateSession(row: Record<string, unknown>): ConfigurationSession {
 export class SqliteRepository {
   constructor(private readonly db: Database) {}
 
+  private persistVisualSpec(sessionId: string, visualSpec: VisualizationSpec) {
+    this.db
+      .prepare(
+        `
+          UPDATE config_sessions
+          SET visual_spec_json = @visual_spec_json,
+              visual_updated_at = @visual_updated_at
+          WHERE id = @id
+        `
+      )
+      .run({
+        id: sessionId,
+        visual_spec_json: JSON.stringify(visualSpec),
+        visual_updated_at: visualSpec.updatedAt
+      });
+
+    return visualSpec;
+  }
+
   createSession(sessionId: string): ConfigurationSession {
     const createdAt = now();
     const theme = createDefaultTheme();
@@ -52,20 +73,22 @@ export class SqliteRepository {
     this.db
       .prepare(
         `INSERT INTO config_sessions (
-          id, status, current_step, state_json, theme_json, latest_confidence, created_at, updated_at, submitted_at
+          id, status, current_step, state_json, theme_json, visual_spec_json, visual_updated_at, latest_confidence, created_at, updated_at, submitted_at
         ) VALUES (
-          @id, 'draft', 1, @state_json, @theme_json, NULL, @created_at, @updated_at, NULL
+          @id, 'draft', 1, @state_json, @theme_json, @visual_spec_json, @visual_updated_at, NULL, @created_at, @updated_at, NULL
         )`
       )
       .run({
         id: sessionId,
         state_json: JSON.stringify(state),
         theme_json: JSON.stringify(theme),
+        visual_spec_json: null,
+        visual_updated_at: null,
         created_at: createdAt,
         updated_at: createdAt
       });
 
-    return {
+    const session: ConfigurationSession = {
       id: sessionId,
       status: "draft",
       currentStep: 1,
@@ -76,6 +99,10 @@ export class SqliteRepository {
       state,
       latestConfidence: null
     };
+
+    this.persistVisualSpec(sessionId, deriveVisualizationSpec(session));
+
+    return session;
   }
 
   getSession(sessionId: string): ConfigurationSession | null {
@@ -91,6 +118,8 @@ export class SqliteRepository {
     if (!session) {
       return null;
     }
+
+    const visualSpec = this.getVisualSpec(sessionId) ?? this.refreshVisualSpec(sessionId);
 
     const turns = this.db
       .prepare("SELECT * FROM conversation_turns WHERE session_id = ? ORDER BY created_at DESC, id DESC")
@@ -123,8 +152,37 @@ export class SqliteRepository {
     return {
       session,
       turns,
-      agentEvents
+      agentEvents,
+      visualSpec
     };
+  }
+
+  getVisualSpec(sessionId: string): VisualizationSpec | null {
+    const row = this.db
+      .prepare("SELECT visual_spec_json FROM config_sessions WHERE id = ?")
+      .get(sessionId) as { visual_spec_json?: string | null } | undefined;
+
+    if (!row?.visual_spec_json) {
+      return null;
+    }
+
+    const parsed = parseJson<unknown>(row.visual_spec_json, null);
+    const result = VisualizationSpecSchema.safeParse(parsed);
+    return result.success ? result.data : null;
+  }
+
+  saveVisualSpec(sessionId: string, visualSpec: VisualizationSpec) {
+    return this.persistVisualSpec(sessionId, VisualizationSpecSchema.parse(visualSpec));
+  }
+
+  refreshVisualSpec(sessionId: string) {
+    const session = this.getSession(sessionId);
+    if (!session) {
+      throw new Error(`Session ${sessionId} not found.`);
+    }
+
+    const nextSpec = deriveVisualizationSpec(session, this.getVisualSpec(sessionId));
+    return this.persistVisualSpec(sessionId, nextSpec);
   }
 
   listSessions(): ConfigurationListItem[] {
@@ -366,4 +424,3 @@ export class SqliteRepository {
     `);
   }
 }
-

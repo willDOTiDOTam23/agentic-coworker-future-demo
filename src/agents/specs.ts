@@ -1,3 +1,4 @@
+import { CONFIGURATION_VISUALIZER_PROMPT } from "./configuration-visualizer/index.js";
 import { DESIGN_PLANNER_PROMPT } from "./design-planner/index.js";
 import { SESSION_MONITOR_PROMPT } from "./session-monitor/index.js";
 import { SUPPLY_ORCHESTRATOR_PROMPT } from "./supply-orchestrator/index.js";
@@ -23,7 +24,9 @@ export const AGENT_SYSTEM_SPEC = {
       "tool_completed",
       "artifact_ready",
       "agent_completed",
-      "agent_failed"
+      "agent_failed",
+      "visual_spec_updated",
+      "session_updated"
     ],
     sqliteTables: ["config_sessions", "conversation_turns", "agent_events", "artifacts"],
     sharedTools: [
@@ -35,6 +38,40 @@ export const AGENT_SYSTEM_SPEC = {
     ]
   },
   agents: [
+    {
+      id: "configuration-visualizer",
+      name: "Configuration Visualizer",
+      folder: "src/agents/configuration-visualizer",
+      mission:
+        "Refine the customer-facing visualization spec so the van canvas and step-specific panel react clearly to each saved choice.",
+      systemPromptSummary:
+        "Takes the current session snapshot plus the deterministic visual spec, returns a validated VisualizationSpec, and preserves the locked exterior-driven theme.",
+      systemPrompt: CONFIGURATION_VISUALIZER_PROMPT,
+      tools: [],
+      inputContract: [
+        "session snapshot from config_sessions",
+        "recent conversation turns from conversation_turns",
+        "current visualization spec stored on config_sessions.visual_spec_json"
+      ],
+      outputContract: [
+        "theme",
+        "stepRail",
+        "visionHighlights",
+        "exteriorScene",
+        "interiorSwatches",
+        "layoutFloorplan",
+        "gearScene"
+      ],
+      handoffs: [],
+      artifactOutputs: ["No persisted artifact output; updates config_sessions.visual_spec_json"],
+      failureBehavior:
+        "Broadcast a customer-safe failure signal without blocking the deterministic visual fallback already stored on the session.",
+      exampleTriggers: [
+        "A customer step save completes",
+        "A session is loaded without a refined visual spec",
+        "A submitted build needs a richer executive-facing visualization"
+      ]
+    },
     {
       id: "session-monitor",
       name: "Session Monitor",
@@ -130,4 +167,3 @@ export const AGENT_SYSTEM_SPEC = {
 } as const;
 
 export type AgentSpec = (typeof AGENT_SYSTEM_SPEC.agents)[number];
-

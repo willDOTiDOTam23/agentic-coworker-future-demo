@@ -4,6 +4,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express, { type Express } from "express";
 import { createOpsOrchestrator, type OpsOrchestrator } from "./agents/orchestrator.js";
+import {
+  createVisualizationOrchestrator,
+  type VisualizationOrchestrator
+} from "./agents/visualizer-orchestrator.js";
 import { appConfig, assertOpenAiConfigured, type AppConfig } from "./lib/config.js";
 import { createDatabase, type AppDatabase } from "./lib/database.js";
 import { buildRealtimeClientSecretPayload } from "./lib/realtime.js";
@@ -17,6 +21,7 @@ export interface RuntimeDeps {
   repository: SqliteRepository;
   sse: SseBroker;
   orchestrator: OpsOrchestrator;
+  visualizer: VisualizationOrchestrator;
 }
 
 export function createRuntime(config: AppConfig = appConfig): RuntimeDeps {
@@ -24,13 +29,15 @@ export function createRuntime(config: AppConfig = appConfig): RuntimeDeps {
   const repository = new SqliteRepository(db);
   const sse = new SseBroker();
   const orchestrator = createOpsOrchestrator(config, repository, sse);
+  const visualizer = createVisualizationOrchestrator(config, repository, sse);
 
   return {
     config,
     db,
     repository,
     sse,
-    orchestrator
+    orchestrator,
+    visualizer
   };
 }
 
@@ -146,6 +153,37 @@ export function createApp(runtime: RuntimeDeps = createRuntime()): Express {
     res.json(detail);
   });
 
+  app.get("/api/configurations/:id/stream", (req, res) => {
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+    res.flushHeaders();
+
+    const sessionId = req.params.id;
+    runtime.sse.addClient(
+      res,
+      (payload) =>
+        payload.sessionId === sessionId &&
+        (payload.type === "visual_spec_updated" || payload.type === "session_updated")
+    );
+    res.write(
+      `data: ${JSON.stringify({
+        type: "connected",
+        sessionId,
+        timestamp: new Date().toISOString()
+      })}\n\n`
+    );
+
+    const heartbeat = setInterval(() => {
+      res.write(": heartbeat\n\n");
+    }, 15000);
+
+    res.on("close", () => {
+      clearInterval(heartbeat);
+      runtime.sse.removeClient(res);
+    });
+  });
+
   app.get("/api/configurations/:id/artifacts", (req, res) => {
     res.json({
       items: runtime.repository.listArtifacts(req.params.id)
@@ -163,8 +201,36 @@ export function createApp(runtime: RuntimeDeps = createRuntime()): Express {
 
     try {
       const session = runtime.repository.saveStep(req.params.id, parsed.data);
+      const visualSpec = runtime.repository.refreshVisualSpec(req.params.id);
+      runtime.sse.broadcast({
+        type: "session_updated",
+        sessionId: req.params.id,
+        agentName: "Customer Session",
+        runId: `session-${Date.now()}`,
+        status: "updated",
+        detail: `${parsed.data.step} saved`,
+        timestamp: new Date().toISOString(),
+        metadata: {
+          source: "deterministic",
+          session
+        }
+      });
+      runtime.sse.broadcast({
+        type: "visual_spec_updated",
+        sessionId: req.params.id,
+        agentName: "Configuration Visualizer",
+        runId: `visual-${Date.now()}`,
+        status: "ready",
+        detail: "Visualization updated",
+        timestamp: new Date().toISOString(),
+        metadata: {
+          source: "deterministic",
+          visualSpec
+        }
+      });
+      runtime.visualizer.queueRun(req.params.id, `step:${parsed.data.step}`);
       runtime.orchestrator.queueRun(req.params.id, `step:${parsed.data.step}`);
-      res.json({ session });
+      res.json({ session, visualSpec });
     } catch (error) {
       res.status(404).json({
         error: error instanceof Error ? error.message : "Unable to save step."
@@ -175,13 +241,41 @@ export function createApp(runtime: RuntimeDeps = createRuntime()): Express {
   app.post("/api/configurations/:id/submit", (req, res) => {
     try {
       const session = runtime.repository.submitSession(req.params.id);
+      const visualSpec = runtime.repository.refreshVisualSpec(req.params.id);
       runtime.repository.addSystemTurn(
         req.params.id,
         "assistant",
         "Configuration submitted for design planning and supply orchestration."
       );
+      runtime.sse.broadcast({
+        type: "session_updated",
+        sessionId: req.params.id,
+        agentName: "Customer Session",
+        runId: `session-${Date.now()}`,
+        status: "submitted",
+        detail: "Configuration submitted",
+        timestamp: new Date().toISOString(),
+        metadata: {
+          source: "submit",
+          session
+        }
+      });
+      runtime.sse.broadcast({
+        type: "visual_spec_updated",
+        sessionId: req.params.id,
+        agentName: "Configuration Visualizer",
+        runId: `visual-${Date.now()}`,
+        status: "ready",
+        detail: "Visualization updated",
+        timestamp: new Date().toISOString(),
+        metadata: {
+          source: "submit",
+          visualSpec
+        }
+      });
+      runtime.visualizer.queueRun(req.params.id, "submit");
       runtime.orchestrator.queueRun(req.params.id, "submit");
-      res.json({ session });
+      res.json({ session, visualSpec });
     } catch (error) {
       res.status(404).json({
         error: error instanceof Error ? error.message : "Unable to submit configuration."
@@ -195,7 +289,10 @@ export function createApp(runtime: RuntimeDeps = createRuntime()): Express {
     res.setHeader("Connection", "keep-alive");
     res.flushHeaders();
 
-    runtime.sse.addClient(res);
+    runtime.sse.addClient(
+      res,
+      (payload) => payload.type !== "visual_spec_updated" && payload.type !== "session_updated"
+    );
     res.write(`data: ${JSON.stringify({ type: "connected", timestamp: new Date().toISOString() })}\n\n`);
 
     const heartbeat = setInterval(() => {

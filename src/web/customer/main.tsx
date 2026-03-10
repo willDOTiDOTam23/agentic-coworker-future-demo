@@ -1,6 +1,6 @@
 import React, { useEffect, useEffectEvent, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
-import type { ConfigurationSession } from "../../lib/domain.js";
+import type { ConfigurationSession, VisualizationSpec } from "../../lib/domain.js";
 import { STEP_DEFINITIONS } from "../../lib/domain.js";
 import { SaveConfigurationStepSchema } from "../../lib/schemas.js";
 import { createRealtimeSession, getConfiguration, saveConfigurationStep, submitConfiguration } from "../shared/api.js";
@@ -46,11 +46,13 @@ function App() {
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
   const [statusCopy, setStatusCopy] = useState("Ready when you are.");
   const [session, setSession] = useState<ConfigurationSession | null>(null);
+  const [visualSpec, setVisualSpec] = useState<VisualizationSpec | null>(null);
   const [transcriptEntries, setTranscriptEntries] = useState<TranscriptEntry[]>([]);
   const [customerWave, setCustomerWave] = useState<number[]>(emptyWaveform());
   const [assistantWave, setAssistantWave] = useState<number[]>(emptyWaveform());
 
   const sessionIdRef = useRef<string | null>(null);
+  const sessionStreamRef = useRef<EventSource | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const peerRef = useRef<RTCPeerConnection | null>(null);
   const localCleanupRef = useRef<(() => void) | null>(null);
@@ -63,6 +65,35 @@ function App() {
   const applySession = useEffectEvent((nextSession: ConfigurationSession) => {
     sessionIdRef.current = nextSession.id;
     setSession(nextSession);
+  });
+
+  const applyVisualSpec = useEffectEvent((nextVisualSpec: VisualizationSpec | null | undefined) => {
+    if (nextVisualSpec) {
+      setVisualSpec(nextVisualSpec);
+    }
+  });
+
+  const subscribeToSessionStream = useEffectEvent((sessionId: string) => {
+    sessionStreamRef.current?.close();
+    const eventSource = new EventSource(`/api/configurations/${sessionId}/stream`);
+    sessionStreamRef.current = eventSource;
+
+    eventSource.onmessage = (event) => {
+      const payload = JSON.parse(event.data) as {
+        type: string;
+        metadata?: { session?: ConfigurationSession; visualSpec?: VisualizationSpec };
+      };
+
+      if (payload.type === "session_updated") {
+        if (payload.metadata?.session) {
+          applySession(payload.metadata.session);
+        }
+      }
+
+      if (payload.type === "visual_spec_updated") {
+        applyVisualSpec(payload.metadata?.visualSpec);
+      }
+    };
   });
 
   const sendRealtimeEvent = useEffectEvent((payload: Record<string, unknown>) => {
@@ -155,8 +186,10 @@ function App() {
       if (toolName === "get_current_configuration") {
         const detail = await getConfiguration(sessionId);
         applySession(detail.session);
+        applyVisualSpec(detail.visualSpec);
         output = {
-          session: detail.session
+          session: detail.session,
+          visualSpec: detail.visualSpec
         };
       }
 
@@ -170,6 +203,7 @@ function App() {
         });
         const result = await saveConfigurationStep(sessionId, validated);
         applySession(result.session);
+        applyVisualSpec(result.visualSpec);
         output = {
           ok: true,
           currentStep: result.session.currentStep,
@@ -181,6 +215,7 @@ function App() {
       if (toolName === "submit_configuration") {
         const result = await submitConfiguration(sessionId);
         applySession(result.session);
+        applyVisualSpec(result.visualSpec);
         output = {
           ok: true,
           status: result.session.status
@@ -259,6 +294,8 @@ function App() {
     setConnectionState("connecting");
     setStatusCopy("Connecting voice...");
     setTranscriptEntries([]);
+    setVisualSpec(null);
+    sessionStreamRef.current?.close();
     handledFunctionCallsRef.current.clear();
     responseInFlightRef.current = false;
     finalizeAssistantTranscript();
@@ -330,6 +367,8 @@ function App() {
       sessionIdRef.current = realtime.sessionId;
       const detail = await getConfiguration(realtime.sessionId);
       applySession(detail.session);
+      applyVisualSpec(detail.visualSpec);
+      subscribeToSessionStream(realtime.sessionId);
     } catch (error) {
       setConnectionState("error");
       setStatusCopy(error instanceof Error ? error.message : "Unable to start the voice build.");
@@ -340,11 +379,12 @@ function App() {
     return () => {
       localCleanupRef.current?.();
       remoteCleanupRef.current?.();
+      sessionStreamRef.current?.close();
       peerRef.current?.close();
     };
   }, []);
 
-  const palette = derivePalette(session);
+  const palette = derivePalette(session, visualSpec);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -420,12 +460,12 @@ function App() {
 
           <div className="panel build-panel">
             <div className="build-panel-head">
-              <div>
+            <div>
                 <h2 className="panel-title">Van configuration</h2>
                 <div className="build-panel-meta">{session?.status === "submitted" ? "Sent to ops" : currentStepLabel}</div>
               </div>
             </div>
-            <VanAssembly session={session} />
+            <VanAssembly session={session} visualSpec={visualSpec} />
           </div>
         </div>
       </div>

@@ -7,7 +7,9 @@ export interface SseEventPayload {
     | "tool_completed"
     | "artifact_ready"
     | "agent_completed"
-    | "agent_failed";
+    | "agent_failed"
+    | "visual_spec_updated"
+    | "session_updated";
   sessionId: string;
   agentName: string;
   runId: string;
@@ -18,10 +20,13 @@ export interface SseEventPayload {
 }
 
 export class SseBroker {
-  private readonly clients = new Set<import("express").Response>();
+  private readonly clients = new Map<
+    import("express").Response,
+    ((payload: SseEventPayload) => boolean) | undefined
+  >();
 
-  addClient(response: import("express").Response) {
-    this.clients.add(response);
+  addClient(response: import("express").Response, predicate?: (payload: SseEventPayload) => boolean) {
+    this.clients.set(response, predicate);
   }
 
   removeClient(response: import("express").Response) {
@@ -30,9 +35,11 @@ export class SseBroker {
 
   broadcast(payload: SseEventPayload) {
     const message = `data: ${JSON.stringify(payload)}\n\n`;
-    for (const client of this.clients) {
+    for (const [client, predicate] of this.clients) {
+      if (predicate && !predicate(payload)) {
+        continue;
+      }
       client.write(message);
     }
   }
 }
-

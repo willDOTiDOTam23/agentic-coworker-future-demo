@@ -22,9 +22,10 @@ ${graphLines}
 ## Shared Models
 - Customer voice site: \`${AGENT_SYSTEM_SPEC.shared.realtimeModel}\`
 - Ops agents: \`${AGENT_SYSTEM_SPEC.shared.opsModel}\`
+- Visualization agent: \`${AGENT_SYSTEM_SPEC.shared.opsModel}\` with fixed \`low\` reasoning
 
 ## Shared Tools
-${AGENT_SYSTEM_SPEC.shared.sharedTools.map((toolName) => `- \`${toolName}\``).join("\n")}
+${AGENT_SYSTEM_SPEC.shared.sharedTools.length ? AGENT_SYSTEM_SPEC.shared.sharedTools.map((toolName) => `- \`${toolName}\``).join("\n") : "- No shared tools"}
 
 ## Shared Input Envelope
 - Session snapshot from \`config_sessions\`
@@ -32,14 +33,15 @@ ${AGENT_SYSTEM_SPEC.shared.sharedTools.map((toolName) => `- \`${toolName}\``).jo
 - Existing artifact summaries from \`artifacts\`
 
 ## Shared Output Envelope
-- Session Monitor returns the monitor assessment contract.
-- Design Planner returns the typed Design Brief contract.
-- Supply Orchestrator returns the typed Supply Order contract.
+${AGENT_SYSTEM_SPEC.agents
+  .map((agent) => `- ${agent.name} returns: ${agent.outputContract.join(", ")}.`)
+  .join("\n")}
 
 ## Handoff Thresholds
 ${AGENT_SYSTEM_SPEC.shared.handoffThresholds.map((line) => `- ${line}`).join("\n")}
 
 ## Artifact Ownership
+- Configuration Visualizer owns \`config_sessions.visual_spec_json\` updates.
 - Design Planner owns \`design-brief\` artifact generation.
 - Supply Orchestrator owns \`supply-order\` artifact generation.
 - Artifacts are append-only revisions stored in \`artifacts\`.
@@ -69,7 +71,7 @@ ${agent.mission}
 ${agent.systemPromptSummary}
 
 ## Tool Definitions
-${agent.tools.map((toolName) => `- \`${toolName}\``).join("\n")}
+${(agent.tools.length ? agent.tools : ["No tools"]).map((toolName) => `- \`${toolName}\``).join("\n")}
 
 ## Input Contract
 ${agent.inputContract.map((line) => `- ${line}`).join("\n")}
@@ -102,4 +104,3 @@ async function main() {
 }
 
 void main();
-

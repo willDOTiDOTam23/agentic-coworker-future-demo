@@ -9,6 +9,7 @@ import { createDatabase } from "../src/lib/database.js";
 import { SqliteRepository } from "../src/lib/repository.js";
 import { SseBroker } from "../src/lib/sse.js";
 import type { OpsOrchestrator } from "../src/agents/orchestrator.js";
+import type { VisualizationOrchestrator } from "../src/agents/visualizer-orchestrator.js";
 
 function createTestRuntime() {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "northstar-server-test-"));
@@ -23,16 +24,19 @@ function createTestRuntime() {
   const repository = new SqliteRepository(db);
   const sse = new SseBroker();
   const queueRun = vi.fn();
+  const queueVisualRun = vi.fn();
   const orchestrator = { queueRun } satisfies OpsOrchestrator;
+  const visualizer = { queueRun: queueVisualRun } satisfies VisualizationOrchestrator;
   const app = createApp({
     config,
     db,
     repository,
     sse,
-    orchestrator
+    orchestrator,
+    visualizer
   });
 
-  return { app, db, repository, queueRun, tempDir };
+  return { app, db, repository, queueRun, queueVisualRun, tempDir };
 }
 
 afterEach(() => {
@@ -44,7 +48,7 @@ describe("server API", () => {
     const runtime = createTestRuntime();
     const session = runtime.repository.createSession("session-123");
 
-    await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
+    const visionResponse = await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
       step: "vision",
       values: {
         useCaseAndVision: {
@@ -57,16 +61,47 @@ describe("server API", () => {
       summary: "Customer wants a warm and quiet weekend escape van."
     }).expect(200);
 
-    await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
+    expect(visionResponse.body.visualSpec.currentStep).toBe("vision");
+    expect(visionResponse.body.visualSpec.theme.backgroundLocked).toBe(false);
+
+    const exteriorResponse = await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
       step: "exterior",
       values: {
         exteriorSpec: {
           exteriorColor: "Forest green",
-          powerPreference: "All-wheel drive"
+          powerPreference: "All-wheel drive",
+          wheelSize: "33 inch"
         }
       },
       summary: "Customer prefers forest green with all-wheel drive."
     }).expect(200);
+
+    expect(exteriorResponse.body.visualSpec.currentStep).toBe("exterior");
+    expect(exteriorResponse.body.visualSpec.theme.backgroundLocked).toBe(true);
+    expect(exteriorResponse.body.visualSpec.exteriorScene.wheelRadius).toBe(32);
+    const lockedBackground = {
+      a: exteriorResponse.body.visualSpec.theme.backgroundA,
+      b: exteriorResponse.body.visualSpec.theme.backgroundB
+    };
+
+    const interiorResponse = await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
+      step: "interior",
+      values: {
+        interiorSpec: {
+          fixtureColor: "Warm birch",
+          primaryTexture: "Matte linen",
+          secondaryTexture: "Stone wool",
+          stitchingColor: "Sand stitch",
+          seatFinish: "Weatherproof camel"
+        }
+      },
+      summary: "Customer wants soft birch fixtures and warm woven materials."
+    }).expect(200);
+
+    expect(interiorResponse.body.visualSpec.currentStep).toBe("interior");
+    expect(interiorResponse.body.visualSpec.theme.backgroundA).toBe(lockedBackground.a);
+    expect(interiorResponse.body.visualSpec.theme.backgroundB).toBe(lockedBackground.b);
+    expect(interiorResponse.body.visualSpec.interiorSwatches.fixtureColor).toBe("Warm birch");
 
     runtime.repository.createArtifact({
       sessionId: session.id,
@@ -88,6 +123,7 @@ describe("server API", () => {
     expect(detailResponse.body.session.currentStep).toBe(5);
     expect(detailResponse.body.session.state.vision.useCase).toBe("Weekend escapes");
     expect(detailResponse.body.session.state.exterior.exteriorColor).toBe("Forest green");
+    expect(detailResponse.body.visualSpec.theme.backgroundLocked).toBe(true);
     expect(detailResponse.body.turns[0].text).toContain("Configuration submitted");
 
     const listResponse = await request(runtime.app).get("/api/configurations").expect(200);
@@ -105,6 +141,9 @@ describe("server API", () => {
     expect(runtime.queueRun).toHaveBeenCalledWith(session.id, "step:vision");
     expect(runtime.queueRun).toHaveBeenCalledWith(session.id, "step:exterior");
     expect(runtime.queueRun).toHaveBeenCalledWith(session.id, "submit");
+    expect(runtime.queueVisualRun).toHaveBeenCalledWith(session.id, "step:vision");
+    expect(runtime.queueVisualRun).toHaveBeenCalledWith(session.id, "step:exterior");
+    expect(runtime.queueVisualRun).toHaveBeenCalledWith(session.id, "submit");
 
     await request(runtime.app).post("/api/admin/reset").expect(200);
     const afterReset = await request(runtime.app).get("/api/configurations").expect(200);
