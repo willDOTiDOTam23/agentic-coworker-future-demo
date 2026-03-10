@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
@@ -10,9 +11,19 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "types": ["node"],
+    "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]
     }
-  }
+  },
+  "include": [
+    "src/server.ts",
+    "src/lib/**/*",
+    "src/agents/**/*",
+    "src/web/**/*",
+    "scripts/generate-agents-docs.ts",
+    "tests/**/*",
+    "vite.config.ts"
+  ]
 }

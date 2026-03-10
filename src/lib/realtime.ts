@@ -1,0 +1,117 @@
+import type { AppConfig } from "./config.js";
+import type { ConfigurationSession } from "./domain.js";
+
+export function buildRealtimeInstructions(session: ConfigurationSession): string {
+  return [
+    "You are Northstar Vans, a warm and concise voice guide helping a customer configure an adventure van.",
+    "Keep every spoken turn short. Ask one question at a time.",
+    "Walk through exactly five steps in order: vision, exterior, interior, layout, gear.",
+    "Keep the demo moving. After vision, collect only a handful of concrete choices per step before moving on.",
+    "After each customer answer, call save_configuration_step with the captured values and a short summary so the visuals update live.",
+    "Use advance:false while you are still gathering a step. Use advance:true only when the active step is complete and you are ready to move to the next one.",
+    "Only call save_configuration_step for the active step you are currently shaping.",
+    "Keep save_configuration_step values flat. Do not wrap fields inside nested objects like exteriorSpec or useCaseAndVision.",
+    "Preferred flat keys: vision -> useCase, vibeKeywords, intendedTrips; exterior -> exteriorColor, finish, wheelSize, wheelStyle, rackStyle, auxLights, powertrain; interior -> fixtureColor, primaryTexture, seatFinish; layout -> driveSide, frontSeatConfig, galleyType, bedType; gear -> roofGear, rearCarrier, ladder, powerModule, campLighting.",
+    "Only set paletteChoice and visualTone during the exterior step. Once exterior color is chosen, keep that theme stable for later steps.",
+    "Use get_current_configuration when you need context. Use submit_configuration after the final review is approved.",
+    "After submit_configuration succeeds, say in one short sentence that the build is complete and the ops team is taking over.",
+    `The current session id is ${session.id}.`
+  ].join(" ");
+}
+
+export function buildRealtimeTools() {
+  return [
+    {
+      type: "function",
+      name: "get_current_configuration",
+      description: "Read the current van configuration and progress for this voice session.",
+      parameters: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          sessionId: {
+            type: "string",
+            description: "The active session id."
+          }
+        },
+        required: ["sessionId"]
+      }
+    },
+    {
+      type: "function",
+      name: "save_configuration_step",
+      description: "Persist the structured choices captured for the current step.",
+      parameters: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          sessionId: { type: "string" },
+          step: {
+            type: "string",
+            enum: ["vision", "exterior", "interior", "layout", "gear"]
+          },
+          values: {
+            type: "object",
+            additionalProperties: {
+              anyOf: [
+                { type: "string" },
+                { type: "number" },
+                { type: "boolean" },
+                {
+                  type: "array",
+                  items: { type: "string" }
+                },
+                { type: "null" }
+              ]
+            }
+          },
+          visualTone: { type: "string" },
+          paletteChoice: { type: "string" },
+          summary: { type: "string" },
+          advance: { type: "boolean" }
+        },
+        required: ["sessionId", "step", "values", "summary"]
+      }
+    },
+    {
+      type: "function",
+      name: "submit_configuration",
+      description: "Submit the completed van configuration to the operations team.",
+      parameters: {
+        type: "object",
+        additionalProperties: false,
+        properties: {
+          sessionId: { type: "string" }
+        },
+        required: ["sessionId"]
+      }
+    }
+  ];
+}
+
+export function buildRealtimeClientSecretPayload(config: AppConfig, session: ConfigurationSession) {
+  return {
+    expires_after: {
+      anchor: "created_at",
+      seconds: 900
+    },
+    session: {
+      type: "realtime",
+      model: config.realtimeModel,
+      instructions: buildRealtimeInstructions(session),
+      output_modalities: ["audio"],
+      tools: buildRealtimeTools(),
+      tool_choice: "auto",
+      audio: {
+        input: {
+          turn_detection: {
+            type: "server_vad"
+          }
+        },
+        output: {
+          voice: config.realtimeVoice
+        }
+      }
+    }
+  };
+}
