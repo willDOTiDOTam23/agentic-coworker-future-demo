@@ -188,4 +188,53 @@ describe("server API", () => {
     runtime.db.close();
     fs.rmSync(runtime.tempDir, { recursive: true, force: true });
   });
+
+  it("extracts exterior visuals from a summary-only save when the model omits flat keys", async () => {
+    const runtime = createTestRuntime();
+    const session = runtime.repository.createSession("session-summary-exterior");
+
+    await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
+      step: "vision",
+      values: {
+        useCase: "Modern, oceanic vibe for weekend mountain biking and scuba trips."
+      },
+      summary: "Modern, oceanic vibe for weekend mountain biking and scuba trips."
+    }).expect(200);
+
+    const exteriorResponse = await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
+      step: "exterior",
+      values: {},
+      summary: "Marine blue exterior with a subtle tone, satin finish, low-profile roof rack, and front bar lights."
+    }).expect(200);
+
+    expect(exteriorResponse.body.session.state.exterior.exteriorColor).toBe("Marine Blue");
+    expect(exteriorResponse.body.session.state.exterior.finish).toBe("Satin finish");
+    expect(exteriorResponse.body.session.state.exterior.auxLights).toBe("Front Bar Lights");
+    expect(exteriorResponse.body.visualSpec.theme.backgroundLocked).toBe(true);
+    expect(exteriorResponse.body.visualSpec.theme.requestedExteriorColor).toBe("Marine Blue");
+    expect(exteriorResponse.body.visualSpec.theme.resolvedExteriorColor).toBe("#56788f");
+    expect(exteriorResponse.body.visualSpec.exteriorScene.renderColor).toBe("#56788f");
+
+    runtime.db.close();
+    fs.rmSync(runtime.tempDir, { recursive: true, force: true });
+  });
+
+  it("rejects an empty save instead of advancing the flow without usable values", async () => {
+    const runtime = createTestRuntime();
+    const session = runtime.repository.createSession("session-empty-step");
+
+    const response = await request(runtime.app).post(`/api/configurations/${session.id}/steps`).send({
+      step: "vision",
+      values: {}
+    }).expect(422);
+
+    expect(response.body.error).toContain("No usable vision choices");
+    expect(response.body.step).toBe("vision");
+
+    const detail = runtime.repository.getConfigurationDetail(session.id);
+    expect(detail?.session.currentStep).toBe(1);
+
+    runtime.db.close();
+    fs.rmSync(runtime.tempDir, { recursive: true, force: true });
+  });
 });

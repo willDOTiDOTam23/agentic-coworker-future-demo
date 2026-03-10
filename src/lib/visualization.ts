@@ -312,6 +312,14 @@ function compactList(items: Array<string | null | undefined>, limit: number) {
     .slice(0, limit);
 }
 
+function clampText(value: string, limit: number) {
+  if (value.length <= limit) {
+    return value;
+  }
+
+  return `${value.slice(0, Math.max(0, limit - 1)).trimEnd()}…`;
+}
+
 function includesLike(value: string | null | undefined, ...needles: string[]) {
   const normalized = (value ?? "").toLowerCase();
   return needles.some((needle) => normalized.includes(needle));
@@ -418,13 +426,18 @@ function deriveVisionHighlights(session: ConfigurationSession, currentStep: Step
   const useCase = pickText(session.state.vision, "useCase", "primaryUseCase", "visionStatement") ?? "Weekend basecamp";
   const vibe = pickList(session.state.vision, "vibeKeywords", "styleKeywords");
   const trips = pickList(session.state.vision, "intendedTrips", "tripTypes");
-  const chips = compactList([useCase, ...vibe, ...trips, currentStep === "vision" ? "Vision shaping" : null], 6);
+  const chips = compactList([useCase, ...vibe, ...trips, currentStep === "vision" ? "Vision shaping" : null], 6).map((item) =>
+    clampText(item, 40)
+  );
 
   return {
-    title: pickText(session.state.vision, "projectTitle", "buildName") ?? "Northstar custom build",
+    title: clampText(pickText(session.state.vision, "projectTitle", "buildName") ?? "Northstar custom build", 80),
     summary:
-      pickText(session.state.vision, "summary", "visionStatement") ??
-      `A ${chips.slice(0, 3).join(", ").toLowerCase()} build shaped around how the van will be used.`,
+      clampText(
+        pickText(session.state.vision, "summary", "visionStatement") ??
+          `A ${chips.slice(0, 3).join(", ").toLowerCase()} build shaped around how the van will be used.`,
+        180
+      ),
     chips: chips.length ? chips : ["Weekend escape", "Calm cabin", "Adventure-ready"]
   };
 }

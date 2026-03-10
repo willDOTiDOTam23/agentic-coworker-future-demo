@@ -424,7 +424,7 @@ input {
 
 .build-stage-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.75fr) minmax(270px, 0.9fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(380px, 1fr);
   gap: clamp(12px, 1.4vw, 18px);
   align-items: stretch;
   min-height: 0;
@@ -668,17 +668,20 @@ input {
 
 .material-board {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
 .material-card {
   display: grid;
   gap: 10px;
-  padding: 12px;
+  min-width: 0;
+  min-height: 158px;
+  padding: 14px;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.82);
   border: 1px solid rgba(24, 33, 37, 0.08);
+  align-content: start;
 }
 
 .material-tile {
@@ -693,11 +696,13 @@ input {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   opacity: 0.56;
+  line-height: 1.2;
 }
 
 .material-value {
-  font-size: 13px;
-  line-height: 1.32;
+  font-size: 14px;
+  line-height: 1.28;
+  overflow-wrap: anywhere;
 }
 
 .floorplan-card {

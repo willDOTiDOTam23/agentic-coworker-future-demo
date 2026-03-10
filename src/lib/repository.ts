@@ -16,6 +16,7 @@ import {
   type ThemeState
 } from "./domain.js";
 import type { SaveConfigurationStepInput } from "./schemas.js";
+import { canonicalizeStepValues, hasMeaningfulStepValues } from "./step-capture.js";
 import { deriveVisualizationSpec, VisualizationSpecSchema } from "./visualization.js";
 
 function now(): string {
@@ -56,8 +57,82 @@ export class StepSequenceError extends Error {
   }
 }
 
+export class StepCaptureError extends Error {
+  readonly step: StepId;
+
+  constructor(step: StepId) {
+    super(`No usable ${step} choices were captured yet. Ask one more short question and save again.`);
+    this.name = "StepCaptureError";
+    this.step = step;
+  }
+}
+
 export class SqliteRepository {
   constructor(private readonly db: Database) {}
+
+  private recoverStateFromTurns(session: ConfigurationSession): ConfigurationSession {
+    const rows = this.db
+      .prepare(
+        `
+          SELECT step, text
+          FROM conversation_turns
+          WHERE session_id = ? AND speaker = 'customer' AND step IS NOT NULL
+          ORDER BY created_at DESC, id DESC
+        `
+      )
+      .all(session.id) as Array<{ step: StepId; text: string }>;
+
+    const nextState: ConfigurationState = {
+      vision: { ...session.state.vision },
+      exterior: { ...session.state.exterior },
+      interior: { ...session.state.interior },
+      layout: { ...session.state.layout },
+      gear: { ...session.state.gear }
+    };
+
+    let didRecover = false;
+    const seenSteps = new Set<StepId>();
+
+    for (const row of rows) {
+      const step = row.step;
+      if (seenSteps.has(step)) continue;
+      seenSteps.add(step);
+
+      if (Object.keys(nextState[step]).length > 0) {
+        continue;
+      }
+
+      const recovered = canonicalizeStepValues(step, {}, row.text);
+      if (!hasMeaningfulStepValues(step, recovered)) {
+        continue;
+      }
+
+      nextState[step] = recovered;
+      didRecover = true;
+    }
+
+    if (!didRecover) {
+      return session;
+    }
+
+    this.db
+      .prepare(
+        `
+          UPDATE config_sessions
+          SET state_json = @state_json
+          WHERE id = @id
+        `
+      )
+      .run({
+        id: session.id,
+        state_json: JSON.stringify(nextState)
+      });
+
+    return {
+      ...session,
+      state: nextState
+    };
+  }
 
   private persistVisualSpec(sessionId: string, visualSpec: VisualizationSpec) {
     this.db
@@ -127,12 +202,13 @@ export class SqliteRepository {
   }
 
   getConfigurationDetail(sessionId: string): ConfigurationDetail | null {
-    const session = this.getSession(sessionId);
+    const rawSession = this.getSession(sessionId);
+    const session = rawSession ? this.recoverStateFromTurns(rawSession) : null;
     if (!session) {
       return null;
     }
 
-    const visualSpec = this.getVisualSpec(sessionId) ?? this.refreshVisualSpec(sessionId);
+    const visualSpec = this.refreshVisualSpec(sessionId);
 
     const turns = this.db
       .prepare("SELECT * FROM conversation_turns WHERE session_id = ? ORDER BY created_at DESC, id DESC")
@@ -189,7 +265,8 @@ export class SqliteRepository {
   }
 
   refreshVisualSpec(sessionId: string) {
-    const session = this.getSession(sessionId);
+    const rawSession = this.getSession(sessionId);
+    const session = rawSession ? this.recoverStateFromTurns(rawSession) : null;
     if (!session) {
       throw new Error(`Session ${sessionId} not found.`);
     }
@@ -236,11 +313,16 @@ export class SqliteRepository {
       throw new StepSequenceError(activeStep, input.step);
     }
 
+    const capturedValues = canonicalizeStepValues(input.step, input.values, input.summary);
+    if (!hasMeaningfulStepValues(input.step, capturedValues)) {
+      throw new StepCaptureError(input.step);
+    }
+
     const mergedState = {
       ...current.state,
       [input.step]: {
         ...current.state[input.step],
-        ...input.values
+        ...capturedValues
       }
     };
 
