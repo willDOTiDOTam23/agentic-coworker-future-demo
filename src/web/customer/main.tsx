@@ -10,6 +10,11 @@ import { Waveform } from "../shared/Waveform.js";
 import "../shared/styles.css";
 
 type ConnectionState = "idle" | "connecting" | "connected" | "error";
+type TranscriptEntry = {
+  id: string;
+  speaker: "customer" | "guide";
+  text: string;
+};
 
 function emptyWaveform() {
   return new Array(24).fill(0.12);
@@ -39,10 +44,9 @@ function createWaveSampler(analyser: AnalyserNode, setValues: (values: number[])
 
 function App() {
   const [connectionState, setConnectionState] = useState<ConnectionState>("idle");
-  const [statusCopy, setStatusCopy] = useState("Tap the center button to start the voice build.");
+  const [statusCopy, setStatusCopy] = useState("Ready when you are.");
   const [session, setSession] = useState<ConfigurationSession | null>(null);
-  const [assistantTranscript, setAssistantTranscript] = useState("");
-  const [customerTranscript, setCustomerTranscript] = useState("");
+  const [transcriptEntries, setTranscriptEntries] = useState<TranscriptEntry[]>([]);
   const [customerWave, setCustomerWave] = useState<number[]>(emptyWaveform());
   const [assistantWave, setAssistantWave] = useState<number[]>(emptyWaveform());
 
@@ -52,6 +56,7 @@ function App() {
   const localCleanupRef = useRef<(() => void) | null>(null);
   const remoteCleanupRef = useRef<(() => void) | null>(null);
   const currentAssistantTranscriptRef = useRef("");
+  const currentAssistantMessageIdRef = useRef<string | null>(null);
   const handledFunctionCallsRef = useRef<Set<string>>(new Set());
   const responseInFlightRef = useRef(false);
 
@@ -62,6 +67,55 @@ function App() {
 
   const sendRealtimeEvent = useEffectEvent((payload: Record<string, unknown>) => {
     dataChannelRef.current?.send(JSON.stringify(payload));
+  });
+
+  const addTranscriptEntry = useEffectEvent((speaker: TranscriptEntry["speaker"], text: string) => {
+    const normalized = text.trim();
+    if (!normalized) {
+      return;
+    }
+
+    setTranscriptEntries((current) =>
+      [
+        ...current,
+        {
+          id: `${speaker}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          speaker,
+          text: normalized
+        }
+      ].slice(-3)
+    );
+  });
+
+  const streamAssistantTranscript = useEffectEvent((delta: string) => {
+    const nextText = `${currentAssistantTranscriptRef.current}${delta}`.trim();
+    currentAssistantTranscriptRef.current = nextText;
+    if (!nextText) {
+      return;
+    }
+
+    const messageId = currentAssistantMessageIdRef.current ?? `guide-${Date.now()}`;
+    currentAssistantMessageIdRef.current = messageId;
+
+    setTranscriptEntries((current) => {
+      const existingIndex = current.findIndex((entry) => entry.id === messageId);
+      if (existingIndex === -1) {
+        const nextEntries: TranscriptEntry[] = [...current, { id: messageId, speaker: "guide", text: nextText }];
+        return nextEntries.slice(-3);
+      }
+
+      const next = [...current];
+      next[existingIndex] = {
+        ...next[existingIndex],
+        text: nextText
+      };
+      return next.slice(-3);
+    });
+  });
+
+  const finalizeAssistantTranscript = useEffectEvent(() => {
+    currentAssistantTranscriptRef.current = "";
+    currentAssistantMessageIdRef.current = null;
   });
 
   const requestModelResponse = useEffectEvent((response?: Record<string, unknown>) => {
@@ -121,7 +175,7 @@ function App() {
           currentStep: result.session.currentStep,
           status: result.session.status
         };
-        setStatusCopy(`Captured ${validated.step}. Keeping the build moving.`);
+        setStatusCopy(`Saved ${validated.step}.`);
       }
 
       if (toolName === "submit_configuration") {
@@ -131,7 +185,7 @@ function App() {
           ok: true,
           status: result.session.status
         };
-        setStatusCopy("Configuration submitted. Ops agents are picking it up.");
+        setStatusCopy("Build sent to ops.");
       }
     } catch (error) {
       output = {
@@ -162,8 +216,7 @@ function App() {
     }
 
     if (payload.type === "response.output_audio_transcript.delta" || payload.type === "response.output_text.delta") {
-      currentAssistantTranscriptRef.current += String(payload.delta ?? "");
-      setAssistantTranscript(currentAssistantTranscriptRef.current.trim());
+      streamAssistantTranscript(String(payload.delta ?? ""));
       return;
     }
 
@@ -176,19 +229,19 @@ function App() {
         return;
       }
 
-      currentAssistantTranscriptRef.current = "";
+      finalizeAssistantTranscript();
       return;
     }
 
     if (payload.type === "conversation.item.input_audio_transcription.completed") {
-      setCustomerTranscript(String(payload.transcript ?? ""));
+      addTranscriptEntry("customer", String(payload.transcript ?? ""));
       return;
     }
 
     if (payload.type === "error") {
       const message = String((payload.error as { message?: string } | undefined)?.message ?? "Realtime error.");
       if (message.includes("active response in progress")) {
-        setStatusCopy("The guide is still finishing a thought. Waiting to continue cleanly.");
+        setStatusCopy("Guide is finishing a thought.");
         return;
       }
 
@@ -204,9 +257,11 @@ function App() {
     }
 
     setConnectionState("connecting");
-    setStatusCopy("Requesting the latest Realtime session and microphone access...");
+    setStatusCopy("Connecting voice...");
+    setTranscriptEntries([]);
     handledFunctionCallsRef.current.clear();
     responseInFlightRef.current = false;
+    finalizeAssistantTranscript();
 
     try {
       const realtime = await createRealtimeSession();
@@ -243,7 +298,7 @@ function App() {
       channel.addEventListener("message", handleRealtimeMessage);
       channel.addEventListener("open", () => {
         setConnectionState("connected");
-        setStatusCopy("Connected. The guide is ready to talk.");
+        setStatusCopy("Voice guide is live.");
         requestModelResponse({
           instructions:
             "Greet the customer and begin step one with a single short question about the vision and use case."
@@ -302,31 +357,30 @@ function App() {
     root.style.setProperty("--ink", palette.ink);
   }, [palette]);
 
+  const currentStepNumber = Math.min(Math.max(session?.currentStep ?? 1, 1), STEP_DEFINITIONS.length);
+  const currentStepLabel =
+    session?.status === "submitted" ? "Submitted" : STEP_DEFINITIONS[currentStepNumber - 1]?.label ?? STEP_DEFINITIONS[0].label;
+
   return (
     <div className="shell">
       <div className="frame">
-        <div className="nav">
-          <div className="brand">
-            <span className="brand-mark" />
-            <div>
-              <div className="brand-eyebrow">Voice-led configuration</div>
-              <div className="brand-name">Northstar Vans</div>
+        <div className="customer-layout">
+          <div className="page-header">
+            <div className="page-header-copy">
+              <div className="brand-eyebrow">Northstar Vans</div>
+              <h1 className="page-title">Build by voice.</h1>
             </div>
+            <a className="nav-link" href="/ops.html" target="_blank" rel="noreferrer">
+              Open Ops Theater
+            </a>
           </div>
-          <a className="nav-link" href="/ops.html" target="_blank" rel="noreferrer">
-            Open Ops Theater
-          </a>
-        </div>
 
-        <div className="hero-grid">
-          <div className="customer-stage">
-            <div className="customer-card">
-              <p className="hero-kicker">Part 1 · Realtime voice</p>
-              <h1 className="hero-title">Build a van by talking to it.</h1>
-              <p className="hero-copy">
-                The UI gets out of the way. A single voice guide walks the customer through a five-step
-                build and the van comes alive as the conversation sharpens.
-              </p>
+          <div className="conversation-row">
+            <div className="panel conversation-visual-panel">
+              <Waveform customerValues={customerWave} guideValues={assistantWave} />
+            </div>
+
+            <div className="voice-action-panel">
               <button
                 className="voice-cta"
                 disabled={connectionState === "connecting" || connectionState === "connected"}
@@ -335,55 +389,43 @@ function App() {
                 {connectionState === "connected"
                   ? "Voice build live"
                   : connectionState === "error"
-                    ? "Restart voice build"
-                    : "Start voice build"}
+                    ? "Let's talk again"
+                    : "Let's talk"}
               </button>
 
-              <div className="status-strip">
-                <span className="activity-label">{connectionState}</span>
-                <div className="activity-copy">{statusCopy}</div>
-              </div>
-
-              <div className="chip-row">
-                {STEP_DEFINITIONS.map((step, index) => {
-                  const currentStep = session?.currentStep ?? 0;
-                  const isComplete = currentStep > index + 1 || session?.status === "submitted";
-                  const isActive = currentStep === index + 1 && session?.status !== "submitted";
-                  return (
-                    <span
-                      key={step.id}
-                      className={`chip ${isComplete ? "complete" : ""} ${isActive ? "active" : ""}`.trim()}
-                    >
-                      {index + 1}. {step.label}
-                    </span>
-                  );
-                })}
-              </div>
-
-              <div className="transcript-strip">
-                <span className="activity-label">Live conversation</span>
-                <div className="activity-copy">
-                  <strong>Customer:</strong> {customerTranscript || "Waiting for the customer to speak."}
-                </div>
-                <div className="activity-copy">
-                  <strong>Guide:</strong> {assistantTranscript || "The guide will speak once the Realtime session is open."}
+              <div className="voice-status-card">
+                <span className={`voice-status-chip ${connectionState}`}>{connectionState}</span>
+                <p className="voice-status-copy">{statusCopy}</p>
+                <div className="voice-progress-copy">
+                  <span>{session?.status === "submitted" ? "Build complete" : `Step ${currentStepNumber} of 5`}</span>
+                  <strong>{currentStepLabel}</strong>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="visual-column">
-            <div className="panel">
-              <h2 className="panel-title">Shared waveform</h2>
-              <div className="waveform-grid">
-                <Waveform customerValues={customerWave} guideValues={assistantWave} />
+          <div className="panel transcript-panel">
+            <div className="transcript-thread" aria-live="polite">
+              {transcriptEntries.length === 0 ? (
+                <div className="transcript-bubble guide empty">Conversation appears here.</div>
+              ) : (
+                transcriptEntries.map((entry) => (
+                  <div key={entry.id} className={`transcript-bubble ${entry.speaker === "customer" ? "customer" : "guide"}`}>
+                    {entry.text}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="panel build-panel">
+            <div className="build-panel-head">
+              <div>
+                <h2 className="panel-title">Van configuration</h2>
+                <div className="build-panel-meta">{session?.status === "submitted" ? "Sent to ops" : currentStepLabel}</div>
               </div>
             </div>
-
-            <div className="panel">
-              <h2 className="panel-title">Configuration build-up</h2>
-              <VanAssembly session={session} />
-            </div>
+            <VanAssembly session={session} />
           </div>
         </div>
       </div>
